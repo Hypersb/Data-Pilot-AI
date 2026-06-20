@@ -9,6 +9,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 ROOT = Path(__file__).resolve().parent.parent
+LOGO_PATH = ROOT / "static" / "logo.png"
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -27,7 +28,7 @@ from app.services.viz_engine import generate_charts
 
 st.set_page_config(
     page_title="Prisma AI",
-    page_icon="📊",
+    page_icon=str(LOGO_PATH) if LOGO_PATH.exists() else "📊",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -618,6 +619,8 @@ def render_chat(df: pd.DataFrame) -> None:
 def main() -> None:
     init_state()
 
+    if LOGO_PATH.exists():
+        st.image(str(LOGO_PATH), width=72)
     st.title("Prisma AI")
     st.markdown("**Intelligent Data Analysis Copilot** — automated insights, forecasts, and reports")
 

@@ -1,67 +1,163 @@
 # Prisma AI
 
-**An AI-Powered Analytics Copilot for Automated Insights, Forecasting, Explainability, and Conversational Data Analysis.**
+<p align="center">
+  <img src="assets/logo.png" alt="Prisma AI logo" width="120" />
+</p>
+
+<p align="center">
+  <strong>AI analytics copilot for CSV and Excel — profile, forecast, explain, and ask in plain English.</strong>
+</p>
+
+<p align="center">
+  Built from Nepal · MIT License
+</p>
+
+<p align="center">
+  <a href="https://github.com/Hypersb/Data-Pilot-AI">github.com/Hypersb/Data-Pilot-AI</a>
+</p>
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js&logoColor=white)](https://nextjs.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.41%2B-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.5%2B-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
 [![SHAP](https://img.shields.io/badge/SHAP-explainability-4CAF50)](https://github.com/shap/shap)
 [![Pytest](https://img.shields.io/badge/Tests-73%20passing-0A9EDC?logo=pytest&logoColor=white)](backend/tests/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-**Repository:** [github.com/Hypersb/Data-Pilot-AI](https://github.com/Hypersb/Data-Pilot-AI)
+---
+
+## Quick start
+
+Run all three services locally (three terminals):
+
+**Terminal 1 — Backend**
+
+```bash
+cd backend
+python -m venv .venv
+.venv\Scripts\activate          # Windows
+# source .venv/bin/activate     # macOS / Linux
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+**Terminal 2 — Web app (primary UI)**
+
+```bash
+cd frontend
+cp .env.local.example .env.local
+npm install
+npm run dev
+```
+
+**Terminal 3 — Streamlit (optional dashboard)**
+
+```bash
+cd backend
+streamlit run streamlit_app/main.py --server.port 8501
+```
+
+| Service | URL |
+|---------|-----|
+| **Web app** | http://localhost:3000 |
+| **API + Swagger** | http://127.0.0.1:8000/docs |
+| **Streamlit** | http://localhost:8501 |
+
+Try it: open the web app → **Upload file** or **Try sample dataset** → ask *"Summarize this dataset"* in chat.
+
+Sample file: [`sample-data/sales.csv`](sample-data/sales.csv)
 
 ---
 
-## 1. Overview
+## Overview
 
-Prisma AI is a Python-based data analysis platform that turns uploaded **CSV or Excel** files into actionable analytics. Users get automated profiling, rule-based insights, interactive charts, model comparison (AutoML), time-series forecasting with backtesting, anomaly detection, SHAP-based explainability, executive reports, and a **tool-calling natural language analyst** — all exposed through a **FastAPI** backend and a **Streamlit** dashboard.
+Prisma AI turns uploaded **CSV or Excel** files into actionable analytics in one session. Upload a file, ask questions in natural language, and get answers **grounded in computed output** — not hallucinated numbers.
 
-The project is designed for students, researchers, and early-career engineers who want a portfolio-ready system that demonstrates **real ML pipelines**, **API-first architecture**, and **responsible AI patterns** (grounded answers, no arbitrary code execution).
+**What you get:**
 
-**What you can do in one session:**
+- Automated data profiling and quality scoring
+- Rule-based insights (correlations, trends, category performance)
+- AutoML model comparison with leaderboards
+- Time-series forecasting with rolling-window backtests
+- Anomaly detection (statistical + ML methods)
+- SHAP explainability for tabular models
+- Conversational analyst with eight registered tools and citations
+- Executive markdown reports (optional LLM narrative)
 
-- Upload a dataset and receive a quality profile within seconds
-- Compare multiple ML models automatically
-- Backtest forecast models and view a ranked leaderboard
-- Detect outliers with several statistical and ML methods
-- Ask questions in plain English and receive answers backed by computed tool output
-- Export a markdown executive report
-
-**Current scope (honest):** sessions are stored in memory (no database), there is no user authentication, and **Ollama is optional** for LLM-enhanced agent planning and report narratives. Core analytics and ML run without Ollama.
+**Honest scope:** sessions live in memory (no database), there is no authentication, and **Ollama is optional**. Core analytics and ML run without any LLM installed.
 
 ---
 
-## 2. Features
+## Web app
+
+The **Next.js** frontend is the primary product UI — conversation-first, with analysis views in the sidebar.
+
+### Routes
+
+| Route | Purpose |
+|-------|---------|
+| `/` | Landing page — Everest-themed hero, ask a question or upload |
+| `/upload` | Drag-and-drop CSV/Excel upload; sample dataset button |
+| `/analyze/{sessionId}/chat` | AI analyst chat with suggestion chips and inline evidence |
+| `/analyze/{sessionId}/data` | Dataset overview — rows, quality, insights |
+| `/analyze/{sessionId}/forecast` | Forecast leaderboard + chart |
+| `/analyze/{sessionId}/explain` | Feature drivers (SHAP) |
+| `/analyze/{sessionId}/models` | AutoML model comparison |
+
+### Frontend stack
+
+- **Next.js 16** (App Router) · **React 19** · **TypeScript**
+- **Tailwind CSS 4** · **Plotly** charts · **react-dropzone**
+
+### Environment
+
+Create `frontend/.env.local`:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+Production build:
+
+```bash
+cd frontend
+npm run build
+npm start
+```
+
+---
+
+## Features
 
 | Capability | Description |
 |------------|-------------|
-| **Data profiling** | Row/column counts, inferred types, missing values, duplicate rows, quality score |
-| **Insight engine** | Correlations, outliers, category performance, trends, growth patterns |
-| **Visualization** | Auto-generated Plotly charts: line, bar, histogram, scatter, correlation heatmap |
-| **AutoML** | Detects regression, classification, or forecasting; trains multiple models; returns a leaderboard |
-| **Forecasting leaderboard** | Rolling-window backtest of ARIMA, Prophet, lag-based Linear Regression, and XGBoost; ranks by MAPE, RMSE, MAE |
-| **Anomaly detection** | IQR, modified Z-score, Isolation Forest, optional time-series rolling z-score |
-| **SHAP explainability** | Global and local feature importance for the AutoML best **tabular** model |
-| **AI Data Analyst** | Eight registered tools; Pydantic-validated tool calling; grounded citations |
-| **Executive reports** | Structured markdown report with optional Ollama narrative |
-| **REST API** | Typed JSON endpoints for every major capability |
+| **Data profiling** | Row/column counts, types, missing values, duplicates, quality score |
+| **Insight engine** | Correlations, outliers, category performance, trends |
+| **Visualization** | Plotly charts: line, bar, histogram, scatter, heatmap |
+| **AutoML** | Regression, classification, or forecasting detection; model leaderboard |
+| **Forecasting** | Backtest ARIMA, Prophet, lag-LR, XGBoost; rank by MAPE / RMSE / MAE |
+| **Anomaly detection** | IQR, modified Z-score, Isolation Forest, time-series z-score |
+| **SHAP explainability** | Global + local importance for tabular AutoML best model |
+| **AI Data Analyst** | Eight tools, Pydantic-validated calls, citation-backed answers |
+| **Executive reports** | Structured markdown; optional Ollama narrative |
+| **REST API** | Typed JSON endpoints for every capability |
 
-**Streamlit tabs:** Overview · Insights · Anomalies · Charts · Forecast · AutoML · Explainable AI · Report · AI Data Analyst
+**Streamlit tabs** (optional): Overview · Insights · Anomalies · Charts · Forecast · AutoML · Explainable AI · Report · AI Data Analyst
 
 ---
 
-## 3. Architecture Diagram
+## Architecture
 
 ```mermaid
 flowchart TB
-    subgraph Client
-        UI[Streamlit Dashboard]
-        API_Client[HTTP Clients / curl]
+    subgraph Clients
+        WEB[Next.js Web App :3000]
+        ST[Streamlit Dashboard :8501]
+        CURL[HTTP / curl]
     end
 
-    subgraph Backend["FastAPI Backend"]
+    subgraph Backend["FastAPI :8000"]
         R[Routers]
         SS[(In-Memory SessionStore)]
         subgraph Services
@@ -71,7 +167,7 @@ flowchart TB
             AML[AutoML Engine]
             FC[Forecast Engine]
             ANO[Anomaly Engine]
-            XAI[SHAP / XAI Engine]
+            XAI[SHAP Engine]
             AGT[Agent Engine]
             RPT[Report Engine]
         end
@@ -81,8 +177,9 @@ flowchart TB
         OLL[Ollama LLM]
     end
 
-    UI --> Services
-    API_Client --> R
+    WEB --> R
+    ST --> R
+    CURL --> R
     R --> SS
     R --> Services
     AGT --> Services
@@ -90,21 +187,49 @@ flowchart TB
     RPT -.->|narrative| OLL
 ```
 
-**Design principles:**
+**Design principles**
 
-- **API-first** — business logic lives in `backend/app/services/`; routers stay thin
-- **Grounded AI** — the LLM selects tools and explains results; Python services compute statistics
-- **Graceful degradation** — heuristic agent routing and template reports when Ollama is offline
+- **API-first** — logic in `backend/app/services/`; routers stay thin
+- **Grounded AI** — LLM selects tools and explains; Python computes statistics
+- **No arbitrary code execution** — only eight registered, validated tools
+- **Graceful degradation** — keyword routing + template answers when Ollama is offline
 
-See also: [docs/architecture.md](docs/architecture.md)
+See [docs/architecture.md](docs/architecture.md) for full detail.
 
 ---
 
-## 4. Tech Stack
+## Project structure
+
+```
+Data-Pilot-AI/
+├── assets/logo.png              # Brand logo
+├── backend/
+│   ├── app/
+│   │   ├── main.py              # FastAPI entry
+│   │   ├── config.py            # Settings & CORS
+│   │   ├── routers/             # API routes
+│   │   └── services/            # ML, agent, analytics engines
+│   ├── streamlit_app/           # Optional Streamlit UI
+│   ├── tests/                   # 73 pytest tests
+│   └── requirements.txt
+├── frontend/
+│   ├── src/app/                 # Next.js pages
+│   ├── src/components/          # UI components
+│   ├── public/sample/           # Sample CSV for one-click demo
+│   └── package.json
+├── sample-data/sales.csv        # Demo dataset
+├── docs/                        # Architecture, demo script, resume bullets
+└── docker-compose.yml
+```
+
+---
+
+## Tech stack
 
 | Layer | Technologies |
 |-------|--------------|
-| **UI** | Streamlit |
+| **Web UI** | Next.js 16, React 19, Tailwind CSS 4, Plotly |
+| **Dashboard UI** | Streamlit |
 | **API** | FastAPI, Pydantic, Uvicorn |
 | **Data** | Pandas, NumPy, openpyxl |
 | **ML / Stats** | scikit-learn, statsmodels, XGBoost, Prophet |
@@ -115,94 +240,77 @@ See also: [docs/architecture.md](docs/architecture.md)
 
 ---
 
-## 5. Machine Learning Features
+## Machine learning
 
 ### AutoML
 
-- Automatically detects **regression**, **classification**, or **forecasting** (datetime + numeric target)
-- Trains candidate models (e.g. Linear Regression, Random Forest, XGBoost; ARIMA/Prophet for forecasting)
-- Returns a **leaderboard** ranked on held-out metrics and a **best model** selection
+Detects **regression**, **classification**, or **forecasting** tasks. Trains candidate models (Linear Regression, Random Forest, XGBoost; ARIMA/Prophet for time series). Returns a ranked **leaderboard** and best model.
 
-### Forecasting Leaderboard
+### Forecasting leaderboard
 
-- Requires a datetime column and numeric target
-- **Rolling-window backtesting** across four approaches:
-  - ARIMA
-  - Prophet
-  - Linear Regression with time-lag features
-  - XGBoost Regressor with time-lag features
-- Evaluates **MAPE**, **RMSE**, and **MAE**
-- Generates forward forecasts with confidence intervals when the selected model supports them
+Requires a datetime column and numeric target. Rolling-window backtest across:
 
-### Anomaly Detection
+- ARIMA · Prophet · Linear Regression (lag features) · XGBoost (lag features)
 
-- **IQR** rule on numeric columns
-- **Modified Z-score** (median + MAD)
-- **Isolation Forest** for multivariate outliers
-- **Time-series** rolling z-score when a datetime column is present
-- Returns flagged rows, severity, methods used, and chart data
+Ranked by **MAPE**, **RMSE**, **MAE**. Forward forecasts with confidence intervals when supported.
 
-### SHAP Explainability
+### Anomaly detection
 
-- Fits the AutoML best model on **tabular** regression or classification tasks
-- Uses SHAP TreeExplainer or LinearExplainer
-- Returns top features, global narrative, local row explanations, and Plotly charts
+IQR · modified Z-score · Isolation Forest · rolling z-score (time series). Returns flagged rows, severity, and chart data.
 
-> **Note:** SHAP is not available when AutoML classifies the dataset as pure **forecasting** (datetime + numeric target only). Use a tabular dataset with feature columns for explainability demos.
+### SHAP explainability
+
+Fits the AutoML best **tabular** model. TreeExplainer or LinearExplainer. Global narrative, local row explanations, Plotly charts.
+
+> SHAP is unavailable for pure forecasting datasets (datetime + target only). Use tabular data with feature columns for driver analysis.
 
 ---
 
-## 6. AI Data Analyst Agent
+## AI Data Analyst
 
-The **AI Data Analyst** answers questions in plain English using a **tool-calling architecture**. The LLM does **not** execute arbitrary Python or compute statistics itself.
+Answers questions in plain English via **tool calling**. The LLM never executes arbitrary Python.
 
-**Flow:** Question → `AgentPlan` (Pydantic) → tool execution → verified facts → optional LLM explanation
-
-**Registered tools:**
+**Flow:** Question → `AgentPlan` (Pydantic) → tool execution → verified facts → explanation
 
 | Tool | Purpose |
 |------|---------|
-| `summarize_dataset` | Profile overview and schema summary |
-| `top_n_by_metric` | Rank categories by a numeric metric |
-| `compare_segments` | Compare average performance across segments |
-| `correlation_analysis` | Top correlations with a target column |
-| `anomaly_explanation` | Explain detected unusual records |
-| `forecast_metric` | Run the forecasting leaderboard |
-| `model_explanation` | SHAP-based feature importance |
-| `generate_business_recommendation` | Actionable recommendations from insight engine |
+| `summarize_dataset` | Profile and schema summary |
+| `top_n_by_metric` | Rank categories by a metric |
+| `compare_segments` | Compare averages across segments |
+| `correlation_analysis` | Top correlations with a target |
+| `anomaly_explanation` | Explain unusual records |
+| `forecast_metric` | Run forecasting leaderboard |
+| `model_explanation` | SHAP feature importance |
+| `generate_business_recommendation` | Actionable recommendations |
 
-**Safety:** No `eval()`, no generated dataframe code — only validated tool calls with citation-backed responses.
-
-**Example questions:**
+**Example questions**
 
 - *"Which region generated the most revenue?"*
-- *"Forecast next month's revenue."*
-- *"Show me unusual records."*
-- *"What variables influence profit most?"*
+- *"What trends stand out?"*
+- *"Forecast next quarter."*
+- *"What drives profit most?"*
 
-When Ollama is unavailable, the agent falls back to **keyword-based tool selection** and template answers — analytics still run through the same tools.
+Without Ollama, the agent uses **keyword-based tool selection** — same tools, template phrasing.
 
 ---
 
-## 7. API Endpoints
+## API reference
 
-Base URL (local): `http://127.0.0.1:8000` · Interactive docs: `/docs`
+Base URL: `http://127.0.0.1:8000` · Interactive docs: `/docs`
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/health` | Health check |
-| `POST` | `/api/upload` | Upload CSV/Excel; returns `session_id` |
+| `POST` | `/api/upload` | Upload CSV/Excel → `session_id` |
 | `DELETE` | `/api/sessions/{session_id}` | Delete session |
 | `GET` | `/api/sessions/{session_id}/profile` | Data profile |
 | `GET` | `/api/sessions/{session_id}/insights` | Generated insights |
 | `GET` | `/api/sessions/{session_id}/charts` | Plotly chart JSON |
-| `GET` | `/api/sessions/{session_id}/forecast` | Forecasting leaderboard + forecast |
-| `POST` | `/api/sessions/{session_id}/forecast` | Legacy compact forecast response |
+| `GET` | `/api/sessions/{session_id}/forecast` | Forecast leaderboard |
 | `POST` | `/api/sessions/{session_id}/automl` | AutoML leaderboard |
 | `GET` | `/api/sessions/{session_id}/xai` | SHAP explanations |
-| `GET` | `/api/sessions/{session_id}/anomalies` | Anomaly detection results |
-| `POST` | `/api/sessions/{session_id}/chat` | AI Data Analyst (tool-calling agent) |
-| `POST` | `/api/sessions/{session_id}/query` | Legacy NL query (agent-backed) |
+| `GET` | `/api/sessions/{session_id}/anomalies` | Anomaly results |
+| `POST` | `/api/sessions/{session_id}/chat` | AI Data Analyst |
 | `GET` | `/api/sessions/{session_id}/report` | Executive markdown report |
 
 **Example — chat**
@@ -215,38 +323,49 @@ curl -X POST "http://127.0.0.1:8000/api/sessions/{session_id}/chat" \
 
 ---
 
-## 8. Installation
+## Installation
 
 ### Prerequisites
 
 - Python 3.11+ (tested on 3.14)
+- Node.js 20+
 - pip
 - Optional: [Ollama](https://ollama.com/) for LLM-enhanced agent and reports
 
-### Clone and install
+### Backend
 
 ```bash
 git clone https://github.com/Hypersb/Data-Pilot-AI.git
 cd Data-Pilot-AI/backend
-
 python -m venv .venv
-
-# Windows
-.venv\Scripts\activate
-
-# macOS / Linux
-source .venv/bin/activate
-
+.venv\Scripts\activate          # Windows
 pip install -r requirements.txt
 ```
 
-### Optional — Ollama model
+### Frontend
+
+```bash
+cd ../frontend
+npm install
+cp .env.local.example .env.local
+```
+
+### Optional — Ollama
 
 ```bash
 ollama pull llama3.2
+# or: ollama pull gemma3:4b
 ```
 
-If you use a different installed model, set `OLLAMA_MODEL` (e.g. `gemma3:4b`) before starting the app.
+Set the model before starting:
+
+```bash
+# Windows PowerShell
+$env:OLLAMA_MODEL="gemma3:4b"
+
+# macOS / Linux
+export OLLAMA_MODEL=gemma3:4b
+```
 
 ### Docker Compose
 
@@ -254,120 +373,108 @@ If you use a different installed model, set `OLLAMA_MODEL` (e.g. `gemma3:4b`) be
 docker compose up -d
 ```
 
-Starts backend, Streamlit, and Ollama containers (see `docker-compose.yml`).
+Starts backend, Streamlit, and Ollama (see `docker-compose.yml`).
 
 ---
 
-## 9. Local Development
-
-From the `backend/` directory:
-
-**Streamlit dashboard (primary UI)**
-
-```bash
-streamlit run streamlit_app/main.py
-```
-
-Open **http://localhost:8501**
-
-**FastAPI backend**
-
-```bash
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
-```
-
-Open **http://127.0.0.1:8000/docs**
-
-**Environment variables**
+## Environment variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Frontend → API base URL |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama API URL |
-| `OLLAMA_MODEL` | `llama3.2` | Model name for agent/report LLM calls |
-| `SESSION_TTL_SECONDS` | `7200` | In-memory session expiry |
-| `MAX_UPLOAD_MB` | `25` | Maximum upload size |
-| `CORS_ORIGINS` | `http://localhost:8501` | Allowed CORS origins |
-
-**Sample data:** upload `sample-data/sales.csv` (multi-region sales with date, region, product, revenue, units).
+| `OLLAMA_MODEL` | `llama3.2` | Model for agent / reports |
+| `SESSION_TTL_SECONDS` | `7200` | Session expiry (seconds) |
+| `MAX_UPLOAD_MB` | `25` | Max upload size |
+| `CORS_ORIGINS` | `http://localhost:8501,http://localhost:3000` | Allowed origins |
 
 ---
 
-## 10. Running Tests
+## Example workflow (web app)
+
+1. Start backend + frontend (see [Quick start](#quick-start))
+2. Open **http://localhost:3000**
+3. Type a question or click **Upload file**
+4. Upload `sample-data/sales.csv` (or use **Try sample dataset** on `/upload`)
+5. **Chat** — ask *"Which region has the highest revenue?"* or *"Summarize this dataset"*
+6. **Overview** — quality score, row counts, auto insights
+7. **Forecast** — backtested leaderboard + chart
+8. **Drivers** — SHAP feature importance (tabular datasets)
+9. **Models** — AutoML comparison table
+
+---
+
+## Example workflow (Streamlit)
+
+1. Start backend + Streamlit
+2. Open **http://localhost:8501**
+3. Upload `sample-data/sales.csv`
+4. Walk tabs: Overview → Insights → Charts → Forecast → AutoML → Explainable AI → Anomalies → AI Data Analyst → Report
+
+---
+
+## Running tests
 
 ```bash
 cd backend
 python -m pytest tests/ -v
 ```
 
-**Status: 73 automated tests passing**
+**73 automated tests passing**
 
 | Module | Covers |
 |--------|--------|
 | `test_analytics.py` | Upload, profile, insights, charts |
-| `test_api.py` | Full API integration flow |
+| `test_api.py` | Full API integration |
 | `test_automl.py` | Task detection, regression/classification/forecasting |
 | `test_forecast.py` | Backtesting, leaderboard, forecast API |
 | `test_anomaly.py` | IQR, Z-score, Isolation Forest, time-series |
-| `test_xai.py` | SHAP explanations and forecasting fallback |
-| `test_agent.py` | Tool selection, tools, chat API, edge cases |
+| `test_xai.py` | SHAP and forecasting fallback |
+| `test_agent.py` | Tool selection, chat API, edge cases |
 
 ---
 
-## 11. Example Workflow
+## Screenshots
 
-1. **Start** Streamlit and open http://localhost:8501
-2. **Upload** `sample-data/sales.csv`
-3. **Overview** — review quality score, column types, and completeness
-4. **Insights** — read auto-generated correlation, trend, and category findings
-5. **Charts** — explore Plotly visualizations
-6. **Forecast** — run the forecasting leaderboard; compare MAPE / RMSE / MAE; view the best-model chart
-7. **AutoML** — train models; inspect the leaderboard and best model
-8. **Explainable AI** — run SHAP on a **tabular** dataset (feature columns + target); on pure time-series data, expect a graceful unavailable message
-9. **Anomalies** — review flagged rows and severity
-10. **AI Data Analyst** — ask *"Which region has the highest revenue?"* or *"Forecast next month's revenue"*
-11. **Report** — generate and download the executive markdown summary
+Add captures under `docs/assets/` for your README or portfolio:
+
+| View | Suggested filename |
+|------|-------------------|
+| Landing | `docs/assets/landing.png` |
+| Chat | `docs/assets/chat.png` |
+| Forecast | `docs/assets/forecast.png` |
+| Streamlit overview | `docs/assets/streamlit-overview.png` |
 
 ---
 
-## 12. Screenshots
+## Roadmap
 
-Screenshots can be added under `docs/assets/` before or after release:
-
-| Tab | Suggested filename |
-|-----|-------------------|
-| Overview | `docs/assets/overview.png` |
-| Forecast leaderboard | `docs/assets/forecast.png` |
-| AI Data Analyst | `docs/assets/agent.png` |
-
-Run Streamlit locally, capture the tabs above, and drop PNGs into `docs/assets/` to enable images in this section.
-
-> **Note:** A legacy Next.js app under `frontend/` is not included in this repository. **Streamlit** (`backend/streamlit_app/`) is the maintained UI.
-
----
-
-## 13. Future Improvements
-
-- [ ] Persistent session storage (PostgreSQL or Redis)
-- [ ] User authentication and multi-tenant sessions
+- [ ] Persistent sessions (PostgreSQL or Redis)
+- [ ] User authentication and multi-tenant workspaces
 - [ ] GitHub Actions CI with live pytest badge
 - [ ] Cached ML artifacts per session
-- [ ] Screenshot and demo GIF assets in README
-- [ ] SHAP support for forecasting models (or clearer UI guidance)
-- [ ] OpenAPI client examples (Python / TypeScript)
+- [ ] Demo GIF in README
+- [ ] OpenAPI TypeScript client generation
 
 ---
 
-## 14. License
+## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+MIT — see [LICENSE](LICENSE).
 
 ---
 
-## Additional Documentation
+## Additional documentation
 
 | Document | Description |
 |----------|-------------|
-| [Architecture](docs/architecture.md) | Data flow, ML pipelines, agent safety design |
-| [Demo script](docs/demo_script.md) | 2-minute and 5-minute presentation scripts |
+| [Architecture](docs/architecture.md) | Data flow, ML pipelines, agent safety |
+| [Demo script](docs/demo_script.md) | 2- and 5-minute presentation scripts |
 | [Resume bullets](docs/resume_bullets.md) | Role-targeted project bullets |
 | [Project evaluation](docs/project_evaluation.md) | Recruiter-facing strengths and scope |
+
+---
+
+<p align="center">
+  <sub>Prisma AI · From Nepal to your spreadsheet</sub>
+</p>

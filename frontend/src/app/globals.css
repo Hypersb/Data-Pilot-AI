@@ -1,0 +1,217 @@
+@import "tailwindcss";
+
+:root {
+  --sky-deep: #0a0f1a;
+  --snow-muted: #94a3b8;
+  --nepal-crimson: #dc2626;
+  --nepal-crimson-hover: #b91c1c;
+  --glass: rgba(10, 15, 26, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --bg-root: #0a0f1a;
+  --bg-panel: #0f1623;
+  --bg-elevated: #151d2e;
+  --bg-hover: #1a2438;
+  --bg-input: #121a28;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(255, 255, 255, 0.16);
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
+  --accent: #f8fafc;
+  --accent-inverse: #0a0f1a;
+  --danger: #fca5a5;
+  --sidebar-w: 15.5rem;
+  --content-max: 42rem;
+  --page-max: 72rem;
+  --page-pad: 1.5rem;
+}
+
+@theme inline {
+  --color-sky-deep: var(--sky-deep);
+  --color-snow-muted: var(--snow-muted);
+  --color-nepal-crimson: var(--nepal-crimson);
+  --color-nepal-crimson-hover: var(--nepal-crimson-hover);
+  --color-bg-root: var(--bg-root);
+  --color-bg-panel: var(--bg-panel);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-bg-hover: var(--bg-hover);
+  --color-bg-input: var(--bg-input);
+  --color-border: var(--border);
+  --color-border-focus: var(--border-focus);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+  --color-accent: var(--accent);
+  --color-accent-inverse: var(--accent-inverse);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  scroll-behavior: smooth;
+  text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg-root);
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: rgba(220, 38, 38, 0.35);
+}
+
+.page-wrap {
+  width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding-inline: var(--page-pad);
+}
+
+.content-col {
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+}
+
+.type-display {
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+}
+
+.type-title {
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.type-body {
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.type-caption {
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.type-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.everest-bg {
+  background-image: url("/images/everest.jpg");
+  background-size: cover;
+  background-position: center 38%;
+  background-repeat: no-repeat;
+}
+
+@media (min-width: 768px) {
+  .everest-bg-fixed {
+    background-attachment: fixed;
+  }
+}
+
+.everest-overlay {
+  background:
+    linear-gradient(to bottom, rgba(10, 15, 26, 0.55) 0%, rgba(10, 15, 26, 0.78) 55%, rgba(10, 15, 26, 0.97) 100%),
+    linear-gradient(to right, rgba(10, 15, 26, 0.5) 0%, transparent 50%, rgba(10, 15, 26, 0.35) 100%);
+}
+
+.glass-panel {
+  background: var(--glass);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border);
+}
+
+.prayer-line {
+  height: 2px;
+  background: linear-gradient(90deg, #003893, #3b82f6, #f8fafc, #dc2626, #22c55e);
+}
+
+@keyframes ken-burns {
+  from {
+    transform: scale(1.03);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+.everest-ken-burns {
+  animation: ken-burns 32s ease-in-out infinite alternate;
+}
+
+.input-shell {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input-shell:focus-within {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+}
+
+.input-shell-landing {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.input-shell-landing:focus-within {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+}
+
+.nav-active {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: inset 2px 0 0 var(--nepal-crimson);
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-elevated) 0%, var(--bg-hover) 50%, var(--bg-elevated) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .everest-ken-burns,
+  .skeleton {
+    animation: none;
+  }
+
+  .everest-bg-fixed {
+    background-attachment: scroll;
+  }
+}

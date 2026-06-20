@@ -121,9 +121,11 @@ out/
 target/
 
 # -----------------------------------------------------------------------------
-# Legacy Next.js frontend (not maintained — Streamlit is primary UI)
+# Next.js frontend
 # -----------------------------------------------------------------------------
-frontend/
+frontend/node_modules/
+frontend/.next/
+frontend/out/
 
 # -----------------------------------------------------------------------------
 # Node.js
