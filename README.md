@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  Built from Nepal · MIT License
+  Built by Subhanjan · MIT License
 </p>
 
 <p align="center">
