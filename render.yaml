@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: prisma-ai-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: CORS_ORIGINS
+        sync: false
+      - key: OLLAMA_BASE_URL
+        sync: false
+      - key: OLLAMA_MODEL
+        value: llama3.2
+      - key: SESSION_TTL_SECONDS
+        value: "7200"
+      - key: MAX_UPLOAD_MB
+        value: "25"
+
+  - type: web
+    name: prisma-ai-ui
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run streamlit_app/main.py --server.port $PORT --server.address 0.0.0.0 --server.headless true
+    envVars:
+      - key: OLLAMA_BASE_URL
+        sync: false
+      - key: OLLAMA_MODEL
+        value: llama3.2
