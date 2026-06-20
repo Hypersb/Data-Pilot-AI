@@ -331,15 +331,17 @@ python -m pytest tests/ -v
 
 ## 12. Screenshots
 
-> Replace placeholders with real captures before publishing.
+Screenshots can be added under `docs/assets/` before or after release:
 
-| | |
-|---|---|
-| ![Overview](docs/assets/overview.png) | **Overview** — data profile and quality score |
-| ![Forecast leaderboard](docs/assets/forecast.png) | **Forecast** — model comparison and chart |
-| ![AI Data Analyst](docs/assets/agent.png) | **AI Data Analyst** — grounded chat with citations |
+| Tab | Suggested filename |
+|-----|-------------------|
+| Overview | `docs/assets/overview.png` |
+| Forecast leaderboard | `docs/assets/forecast.png` |
+| AI Data Analyst | `docs/assets/agent.png` |
 
-Add PNG or GIF files to `docs/assets/`.
+Run Streamlit locally, capture the tabs above, and drop PNGs into `docs/assets/` to enable images in this section.
+
+> **Note:** A legacy Next.js app under `frontend/` is not included in this repository. **Streamlit** (`backend/streamlit_app/`) is the maintained UI.
 
 ---
 

@@ -16,7 +16,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+/lib/
 lib64/
 parts/
 sdist/
@@ -121,10 +121,14 @@ out/
 target/
 
 # -----------------------------------------------------------------------------
-# Node.js (legacy frontend)
+# Legacy Next.js frontend (not maintained — Streamlit is primary UI)
+# -----------------------------------------------------------------------------
+frontend/
+
+# -----------------------------------------------------------------------------
+# Node.js
 # -----------------------------------------------------------------------------
 node_modules/
-frontend/node_modules/
 .pnp
 .pnp.*
 .yarn/*
