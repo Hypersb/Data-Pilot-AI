@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, Query
 from app.routers.profile import _get_df
 from app.schemas.responses import ForecastLeaderboardResponse, ForecastRequest, ForecastResponse
 from app.services.forecast_engine import run_forecast, run_forecast_leaderboard
+from app.services.experiment_tracker_service import experiment_tracker
 
 router = APIRouter(prefix="/api/sessions", tags=["forecast"])
 
@@ -24,6 +25,14 @@ async def get_forecast_leaderboard(
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if result.get("available") and result.get("best_model"):
+        experiment_tracker.log_run(
+            session_id=session_id,
+            model_name=result["best_model"]["model_name"],
+            task_type="forecasting",
+            metrics=result["best_model"].get("metrics", {}),
+            notes="Forecast leaderboard run",
+        )
     return ForecastLeaderboardResponse(**result)
 
 
