@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { sendChat } from "@/lib/api";
 import type { ChatMessage } from "@/lib/types";
@@ -8,14 +8,18 @@ import { Composer } from "@/components/product/Composer";
 import { EvidenceBlock } from "@/components/product/EvidenceBlock";
 
 const suggestions = [
-  "Summarize this dataset",
+  "Summarize this dataset and highlight the top 3 business insights",
   "What trends stand out?",
   "Which category performs best?",
 ];
 
-export function Conversation({ sessionId }: { sessionId: string }) {
+const BOOTSTRAP_Q =
+  "Summarize this dataset and highlight the top 3 business insights";
+
+function ConversationInner({ sessionId }: { sessionId: string }) {
   const searchParams = useSearchParams();
   const initialQ = searchParams.get("q");
+  const bootstrap = searchParams.get("bootstrap") === "1";
   const bootstrapped = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -35,6 +39,8 @@ export function Conversation({ sessionId }: { sessionId: string }) {
         {
           role: "assistant",
           content: result.answer,
+          tool_used: result.tool_used,
+          confidence: result.confidence,
           citations: result.citations,
           chart_data: result.chart_data,
         },
@@ -47,12 +53,14 @@ export function Conversation({ sessionId }: { sessionId: string }) {
   }
 
   useEffect(() => {
-    if (initialQ && !bootstrapped.current) {
+    if (bootstrapped.current) return;
+    const q = initialQ || (bootstrap ? BOOTSTRAP_Q : null);
+    if (q) {
       bootstrapped.current = true;
-      submit(initialQ);
+      submit(q);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialQ, sessionId]);
+  }, [initialQ, bootstrap, sessionId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -94,7 +102,19 @@ export function Conversation({ sessionId }: { sessionId: string }) {
                   </div>
                 ) : (
                   <div>
-                    <p className="type-label mb-3">Prisma</p>
+                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                      <p className="type-label">Prisma</p>
+                      {msg.tool_used && (
+                        <span className="rounded-full bg-bg-hover px-2 py-0.5 text-[11px] text-text-faint">
+                          {msg.tool_used.replace(/_/g, " ")}
+                        </span>
+                      )}
+                      {msg.confidence != null && (
+                        <span className="text-[11px] text-text-faint">
+                          {Math.round(msg.confidence * 100)}% confidence
+                        </span>
+                      )}
+                    </div>
                     <p className="type-body text-text-secondary whitespace-pre-wrap">
                       {msg.content}
                     </p>
@@ -135,5 +155,19 @@ export function Conversation({ sessionId }: { sessionId: string }) {
         </div>
       </div>
     </div>
+  );
+}
+
+export function Conversation({ sessionId }: { sessionId: string }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-full items-center justify-center text-sm text-text-muted">
+          Loading chat…
+        </div>
+      }
+    >
+      <ConversationInner sessionId={sessionId} />
+    </Suspense>
   );
 }

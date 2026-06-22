@@ -1,13 +1,17 @@
 export const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+  process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8080";
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     const detail = body.detail;
-    throw new Error(
-      typeof detail === "string" ? detail : `Request failed (${res.status})`
-    );
+    const msg =
+      typeof detail === "string"
+        ? detail
+        : res.status === 404
+          ? "Endpoint or session not found. Restart the backend and upload your dataset again."
+          : `Request failed (${res.status})`;
+    throw new Error(msg);
   }
   return res.json();
 }
@@ -88,4 +92,98 @@ export async function deleteSession(sessionId: string) {
     method: "DELETE",
   });
   return handleResponse<{ message: string }>(res);
+}
+
+// V3 analysis bundle
+export async function getAnalysis(sessionId: string) {
+  const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/analysis`);
+  return handleResponse<import("./types").AnalysisResponse>(res);
+}
+
+export async function getCharts(sessionId: string) {
+  const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/charts`);
+  return handleResponse<import("./types").ChartsResponse>(res);
+}
+
+// V2 API
+export async function getHealth(sessionId: string) {
+  const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/health`);
+  return handleResponse<import("./types").HealthResponse>(res);
+}
+
+export async function postRootCause(sessionId: string, body: import("./types").RootCauseRequest) {
+  const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/root-cause`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return handleResponse<import("./types").RootCauseResponse>(res);
+}
+
+export async function getStory(sessionId: string, topic?: string) {
+  const qs = topic ? `?topic=${encodeURIComponent(topic)}` : "";
+  const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/story${qs}`);
+  return handleResponse<import("./types").StoryResponse>(res);
+}
+
+export async function comparePeriod(sessionId: string, body: import("./types").PeriodCompareRequest) {
+  const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/compare/period`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return handleResponse<import("./types").PeriodCompareResponse>(res);
+}
+
+export async function compareDatasets(body: import("./types").DatasetCompareRequest) {
+  const res = await fetch(`${API_BASE}/api/sessions/compare`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return handleResponse<import("./types").DatasetCompareResponse>(res);
+}
+
+export async function getDashboard(sessionId: string) {
+  const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/dashboard`);
+  return handleResponse<import("./types").DashboardResponse>(res);
+}
+
+export async function cleanDataset(sessionId: string, body: import("./types").CleanRequest) {
+  const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/clean`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return handleResponse<import("./types").CleanResponse>(res);
+}
+
+export async function generateSql(sessionId: string, body: import("./types").SqlRequest) {
+  const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/sql`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return handleResponse<import("./types").SqlResponse>(res);
+}
+
+export async function getReportV2(sessionId: string, format: "markdown" | "pdf" | "pptx" = "markdown") {
+  const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/report/v2?format=${format}`);
+  if (format === "pdf" || format === "pptx") {
+    if (!res.ok) throw new Error(`Request failed (${res.status})`);
+    return res.blob();
+  }
+  return handleResponse<import("./types").ReportV2Response>(res);
+}
+
+export async function getExperiments(sessionId: string) {
+  const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/experiments`);
+  return handleResponse<import("./types").ExperimentsListResponse>(res);
+}
+
+export async function runTeamAnalysis(sessionId: string) {
+  const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/team-analysis`, {
+    method: "POST",
+  });
+  return handleResponse<import("./types").TeamAnalysisResponse>(res);
 }

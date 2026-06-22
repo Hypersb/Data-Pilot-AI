@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>AI analytics copilot for CSV and Excel — profile, forecast, explain, and ask in plain English.</strong>
+  <strong>Upload data. Get insights, forecasts, and a business report — then talk to your data in plain English.</strong>
 </p>
 
 <p align="center">
@@ -29,42 +29,40 @@
 
 ## Quick start
 
-Run all three services locally (three terminals):
+**Recommended (Windows):** one command from the project root:
 
-**Terminal 1 — Backend**
+```powershell
+.\scripts\start-dev.ps1
+```
+
+Or run manually in two terminals:
+
+**Terminal 1 — Backend (port 8080)**
 
 ```bash
 cd backend
-python -m venv .venv
-.venv\Scripts\activate          # Windows
-# source .venv/bin/activate     # macOS / Linux
 pip install -r requirements.txt
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8080
 ```
 
-**Terminal 2 — Web app (primary UI)**
+**Terminal 2 — Web app**
 
 ```bash
 cd frontend
-cp .env.local.example .env.local
+cp .env.local.example .env.local   # macOS/Linux: copy file to .env.local
 npm install
 npm run dev
-```
-
-**Terminal 3 — Streamlit (optional dashboard)**
-
-```bash
-cd backend
-streamlit run streamlit_app/main.py --server.port 8501
 ```
 
 | Service | URL |
 |---------|-----|
 | **Web app** | http://localhost:3000 |
-| **API + Swagger** | http://127.0.0.1:8000/docs |
-| **Streamlit** | http://localhost:8501 |
+| **API + Swagger** | http://127.0.0.1:8080/docs |
+| **Health check** | http://127.0.0.1:8080/health |
 
-Try it: open the web app → **Upload file** or **Try sample dataset** → ask *"Summarize this dataset"* in chat.
+**V3 demo flow:** Upload (or **Try sample dataset**) → **Overview** → **Insights** → **Forecast** → **Chat** → **Report** (PDF download).
+
+Demo script: [`docs/v3-demo-script.md`](docs/v3-demo-script.md)
 
 Sample file: [`sample-data/sales.csv`](sample-data/sales.csv)
 
@@ -72,18 +70,22 @@ Sample file: [`sample-data/sales.csv`](sample-data/sales.csv)
 
 ## Overview
 
-Prisma AI turns uploaded **CSV or Excel** files into actionable analytics in one session. Upload a file, ask questions in natural language, and get answers **grounded in computed output** — not hallucinated numbers.
+Prisma AI is a **graduation-ready AI Business Analyst**. Upload CSV or Excel and get automatic EDA, statistical insights, forecasting, natural-language Q&A, and a PDF business report — all grounded in Python computations, not hallucinated numbers.
 
-**What you get:**
+**V3 pipeline:**
 
-- Automated data profiling and quality scoring
-- Rule-based insights (correlations, trends, category performance)
-- AutoML model comparison with leaderboards
-- Time-series forecasting with rolling-window backtests
-- Anomaly detection (statistical + ML methods)
-- SHAP explainability for tabular models
-- Conversational analyst with eight registered tools and citations
-- Executive markdown reports (optional LLM narrative)
+1. **Upload** — CSV/Excel ingest with type inference  
+2. **Automatic EDA** — profile, KPIs, charts  
+3. **AI Insights** — correlations, trends, outliers, segment performance  
+4. **Forecasting** — Prophet, ARIMA, XGBoost leaderboard  
+5. **Natural Language Chat** — tool-calling agent with citations  
+6. **PDF Business Report** — executive summary and recommendations  
+
+**Skills demonstrated:** Data Science · Machine Learning · Statistics · Python · FastAPI · Next.js · Explainable AI
+
+**Advanced capabilities (V2):** health scoring, root cause analysis, multi-agent team, NL cleaning, SQL generation — available under **Advanced** in the sidebar.
+
+**Future vision:** connectors (CRM, Stripe, Snowflake), semantic layer, AI business consultant — see roadmap below.
 
 **Honest scope:** sessions live in memory (no database), there is no authentication, and **Ollama is optional**. Core analytics and ML run without any LLM installed.
 
@@ -115,7 +117,7 @@ The **Next.js** frontend is the primary product UI — conversation-first, with 
 Create `frontend/.env.local`:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_API_URL=http://127.0.0.1:8080
 ```
 
 Production build:
@@ -157,7 +159,7 @@ flowchart TB
         CURL[HTTP / curl]
     end
 
-    subgraph Backend["FastAPI :8000"]
+    subgraph Backend["FastAPI :8080"]
         R[Routers]
         SS[(In-Memory SessionStore)]
         subgraph Services
@@ -296,7 +298,7 @@ Without Ollama, the agent uses **keyword-based tool selection** — same tools, 
 
 ## API reference
 
-Base URL: `http://127.0.0.1:8000` · Interactive docs: `/docs`
+Base URL: `http://127.0.0.1:8080` · Interactive docs: `/docs`
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -316,7 +318,7 @@ Base URL: `http://127.0.0.1:8000` · Interactive docs: `/docs`
 **Example — chat**
 
 ```bash
-curl -X POST "http://127.0.0.1:8000/api/sessions/{session_id}/chat" \
+curl -X POST "http://127.0.0.1:8080/api/sessions/{session_id}/chat" \
   -H "Content-Type: application/json" \
   -d '{"question": "Which region has the highest revenue?"}'
 ```
@@ -381,7 +383,7 @@ Starts backend, Streamlit, and Ollama (see `docker-compose.yml`).
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Frontend → API base URL |
+| `NEXT_PUBLIC_API_URL` | `http://127.0.0.1:8080` | Frontend → API base URL |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama API URL |
 | `OLLAMA_MODEL` | `llama3.2` | Model for agent / reports |
 | `SESSION_TTL_SECONDS` | `7200` | Session expiry (seconds) |

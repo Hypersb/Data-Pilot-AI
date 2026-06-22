@@ -102,6 +102,28 @@ export interface XAIResponse {
   chart_data: { importance_bar?: Record<string, unknown> };
 }
 
+export interface ChartsResponse {
+  charts: ChartItem[];
+  count: number;
+}
+
+export interface ChartItem {
+  id: string;
+  type: string;
+  title: string;
+  figure: Record<string, unknown>;
+}
+
+export interface AnalysisResponse {
+  profile: ProfileResponse;
+  insights: InsightItem[];
+  insight_count: number;
+  dashboard: DashboardResponse;
+  forecast_available: boolean;
+  forecast_message: string;
+  forecast: ForecastLeaderboardResponse | null;
+}
+
 export interface ChatResponse {
   answer: string;
   tool_used: string;
@@ -118,4 +140,206 @@ export interface ChatMessage {
   confidence?: number;
   citations?: string[];
   chart_data?: Record<string, unknown>;
+}
+
+// V2 types
+export interface HealthIssue {
+  severity: string;
+  column: string | null;
+  description: string;
+  recommended_fix: string | null;
+}
+
+export interface HealthSubScores {
+  completeness: number;
+  consistency: number;
+  uniqueness: number;
+  validity: number;
+  missing_value_score: number;
+  duplicate_score: number;
+  outlier_score: number;
+}
+
+export interface HealthResponse {
+  overall_score: number;
+  sub_scores: HealthSubScores;
+  issues: HealthIssue[];
+  recommended_fixes: string[];
+  rows: number;
+  columns: number;
+}
+
+export interface RootCauseRequest {
+  metric_column: string;
+  dimension_columns?: string[];
+  period_column?: string;
+}
+
+export interface ContributorItem {
+  dimension: string;
+  value: string;
+  baseline_value: number;
+  comparison_value: number;
+  delta: number;
+  contribution_pct: number;
+}
+
+export interface RootCauseResponse {
+  metric_column: string;
+  metric_change_pct: number;
+  total_delta: number;
+  baseline_total: number;
+  comparison_total: number;
+  contributors: ContributorItem[];
+  chart_data: Record<string, unknown>;
+}
+
+export interface StoryResponse {
+  what_happened: string;
+  why_it_happened: string;
+  what_to_do_next: string;
+  facts: string[];
+  llm_enhanced: boolean;
+}
+
+export interface PeriodCompareRequest {
+  metric_column?: string;
+  date_column?: string;
+  period?: "mom" | "qoq" | "yoy";
+}
+
+export interface PeriodChangeItem {
+  period: string;
+  previous_period: string;
+  value: number;
+  previous_value: number;
+  change_pct: number;
+  delta: number;
+}
+
+export interface PeriodCompareResponse {
+  metric_column: string;
+  date_column: string;
+  period_type: string;
+  changes: PeriodChangeItem[];
+  summary: string;
+  emerging_trends: string[];
+}
+
+export interface DatasetCompareRequest {
+  session_id_a: string;
+  session_id_b: string;
+  metric_columns?: string[];
+}
+
+export interface DatasetCompareResponse {
+  session_id_a: string;
+  session_id_b: string;
+  schema_alignment: Record<string, unknown>;
+  metric_comparisons: Record<string, unknown>[];
+  summary: string;
+  category_shifts: Record<string, unknown>[];
+}
+
+export interface KpiItem {
+  label: string;
+  column: string;
+  aggregation: string;
+  value: number;
+  format: string;
+}
+
+export interface DashboardPanel {
+  id: string;
+  type: string;
+  title: string;
+  config: Record<string, unknown>;
+}
+
+export interface DashboardResponse {
+  kpis: KpiItem[];
+  panels: DashboardPanel[];
+  quality_alerts: string[];
+  chart_data: Record<string, unknown>;
+}
+
+export interface CleanRequest {
+  instruction: string;
+  replace_in_place?: boolean;
+}
+
+export interface CleanAuditItem {
+  step: number;
+  operation: string;
+  description: string;
+  rows_before: number;
+  rows_after: number;
+  columns_affected: string[];
+}
+
+export interface CleanResponse {
+  success: boolean;
+  audit_trail: CleanAuditItem[];
+  new_session_id: string | null;
+  rows: number;
+  columns: number;
+  preview: Record<string, unknown>[];
+  health_score_before: number;
+  health_score_after: number;
+  message: string;
+}
+
+export interface SqlRequest {
+  question: string;
+}
+
+export interface SqlResponse {
+  sql: string;
+  explanation: string;
+  tables_used: string[];
+  columns_referenced: string[];
+  assumptions: string[];
+}
+
+export interface ReportV2Response {
+  markdown: string;
+  executive_summary: string;
+  key_findings: string[];
+  risks: string[];
+  opportunities: string[];
+  recommendations: string[];
+  llm_enhanced: boolean;
+  format: string;
+}
+
+export interface ExperimentItem {
+  run_id: string;
+  session_id: string;
+  model_name: string;
+  task_type: string;
+  hyperparameters: Record<string, unknown>;
+  metrics: Record<string, number>;
+  timestamp: string;
+  notes: string;
+}
+
+export interface ExperimentsListResponse {
+  experiments: ExperimentItem[];
+  count: number;
+}
+
+export interface AgentFinding {
+  role: string;
+  findings: string[];
+  confidence: number;
+  citations: string[];
+}
+
+export interface TeamAnalysisResponse {
+  executive_summary: string;
+  analyst_section: AgentFinding;
+  ml_section: AgentFinding;
+  business_section: AgentFinding;
+  qa_section: AgentFinding;
+  combined_recommendations: string[];
 }

@@ -33,7 +33,7 @@ export default function UploadPageClient() {
           columns: result.columns.length,
         });
         const q = pendingQ ? `?q=${encodeURIComponent(pendingQ)}` : "";
-        router.push(`/analyze/${result.session_id}/chat${q}`);
+        router.push(`/analyze/${result.session_id}${q ? `/chat${q}` : ""}`);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Upload failed");
         setLoading(false);
@@ -107,7 +107,7 @@ export default function UploadPageClient() {
                 }
               }}
             >
-              Try sample dataset
+              Try sample dataset (recommended for demos)
             </Button>
           </div>
         </div>
