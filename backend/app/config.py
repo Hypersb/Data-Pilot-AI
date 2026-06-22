@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    cors_origins: str = "http://localhost:8501,http://localhost:8000,http://localhost:3000"
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:8080,http://127.0.0.1:8080,http://localhost:8501"
     session_ttl_seconds: int = 7200
     max_upload_mb: int = 25
     ollama_base_url: str = "http://localhost:11434"
