@@ -199,7 +199,8 @@ docker-compose.override.yaml
 # -----------------------------------------------------------------------------
 # ML / data artifacts (local runs — keep sample-data/ committed)
 # -----------------------------------------------------------------------------
-models/
+/models/
+backend/models/
 checkpoints/
 *.pkl
 *.pickle
