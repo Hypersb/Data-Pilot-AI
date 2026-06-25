@@ -4,6 +4,8 @@ import { use, useState } from "react";
 import { generateSql } from "@/lib/api";
 import type { SqlResponse } from "@/lib/types";
 import { Panel } from "@/components/product/Panel";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 export default function SqlPage({
   params,
@@ -26,29 +28,33 @@ export default function SqlPage({
   };
 
   return (
-    <Panel title="SQL Generator" description="Educational NL→SQL reasoning. Queries are not executed." loading={false}>
-      <div className="flex gap-3">
-        <input
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          className="flex-1 rounded-lg border border-border bg-bg-panel px-4 py-2 text-sm"
-        />
-        <button
-          type="button"
-          onClick={run}
-          disabled={loading}
-          className="rounded-lg bg-nepal-crimson px-4 py-2 text-sm text-white disabled:opacity-50"
-        >
-          Generate
-        </button>
-      </div>
+    <Panel title="SQL Generator" description="Natural language to SQL — educational reasoning, queries are not executed." loading={false}>
+      <Card>
+        <CardContent className="flex gap-3 py-6">
+          <input
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            className="flex-1 rounded-lg border border-border bg-bg-root px-4 py-2 text-sm"
+          />
+          <Button onClick={run} disabled={loading}>
+            Generate
+          </Button>
+        </CardContent>
+      </Card>
       {error && <p className="mt-4 text-sm text-danger">{error}</p>}
       {result && (
         <div className="mt-6 space-y-4">
-          <pre className="overflow-x-auto rounded-xl border border-border bg-bg-panel p-4 text-sm text-text-primary">
-            {result.sql}
-          </pre>
-          <p className="text-sm text-text-muted">{result.explanation}</p>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Generated SQL</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <pre className="overflow-x-auto rounded-lg bg-bg-root p-4 text-sm text-text-primary">
+                {result.sql}
+              </pre>
+            </CardContent>
+          </Card>
+          <p className="text-sm leading-relaxed text-text-muted">{result.explanation}</p>
           {result.assumptions.length > 0 && (
             <ul className="text-xs text-text-faint">
               {result.assumptions.map((a, i) => (

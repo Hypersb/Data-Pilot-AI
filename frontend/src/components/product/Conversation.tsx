@@ -74,8 +74,10 @@ function ConversationInner({ sessionId }: { sessionId: string }) {
         <div className="content-col px-6 py-12 lg:px-8">
           {empty && (
             <div className="py-8">
-              <h2 className="type-title text-text-primary">What should we explore?</h2>
-              <p className="type-caption mt-2">Ask anything about your uploaded file.</p>
+              <h2 className="type-title text-text-primary">Ask Prisma</h2>
+              <p className="type-caption mt-2">
+                Your AI data analyst — ask questions in plain English and get cited answers.
+              </p>
               <div className="mt-8 flex flex-wrap gap-2">
                 {suggestions.map((q) => (
                   <button

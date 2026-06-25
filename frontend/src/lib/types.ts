@@ -45,12 +45,29 @@ export interface InsightsResponse {
   count: number;
 }
 
+export interface AnomalyRowItem {
+  row_index: number;
+  severity: string;
+  methods: string[];
+  columns: string[];
+  explanation: string;
+  values: Record<string, unknown>;
+  title?: string;
+  date?: string;
+  impact_pct?: number;
+  possible_causes?: string[];
+}
+
 export interface AnomalyResponse {
   available: boolean;
   total_anomalies: number;
   anomaly_methods_used: string[];
   plain_english_explanation: string;
   anomaly_summary: string;
+  anomaly_rows?: AnomalyRowItem[];
+  top_anomalous_columns?: { column: string; display_name: string; anomaly_count: number }[];
+  severity_score?: number;
+  chart_data?: { anomaly_chart?: Record<string, unknown> };
 }
 
 export interface AutoMLModelEntry {
@@ -59,6 +76,29 @@ export interface AutoMLModelEntry {
   rank: number | null;
   is_best: boolean;
   status: string;
+  training_time_ms?: number;
+  prediction_time_ms?: number;
+  score?: number;
+  description?: string;
+}
+
+export interface ModelArenaResponse {
+  task_type: string;
+  target_column: string;
+  feature_columns: string[];
+  detection_reason: string;
+  primary_metric: string;
+  leaderboard: AutoMLModelEntry[];
+  best_model: {
+    model_name: string;
+    metrics: Record<string, number>;
+    rank: number;
+    description?: string;
+    why_it_won?: string;
+  };
+  model_explanation: string;
+  performance_summary: string;
+  models_trained: number;
 }
 
 export interface AutoMLResponse {
@@ -77,6 +117,17 @@ export interface ForecastLeaderboardEntry {
   is_best: boolean;
 }
 
+export interface ForecastExecutiveSummary {
+  current_trend: string;
+  trend_pct: number;
+  forecast_period_label: string;
+  projected_change_pct: number;
+  confidence_level: string;
+  best_case: number;
+  worst_case: number;
+  ai_commentary: string;
+}
+
 export interface ForecastLeaderboardResponse {
   target_column: string;
   date_column: string;
@@ -86,6 +137,7 @@ export interface ForecastLeaderboardResponse {
   best_model: ForecastLeaderboardEntry;
   forecast: { date: string; value: number; lower?: number; upper?: number }[];
   chart_data: { forecast_chart?: Record<string, unknown> };
+  executive_summary?: ForecastExecutiveSummary;
 }
 
 export interface XAIResponse {
@@ -326,6 +378,51 @@ export interface ExperimentItem {
 export interface ExperimentsListResponse {
   experiments: ExperimentItem[];
   count: number;
+}
+
+export interface FeatureSetResult {
+  label: string;
+  name: string;
+  features: string[];
+  feature_count: number;
+  model_name: string;
+  metrics: Record<string, number>;
+  score: number;
+  rank?: number;
+  is_best?: boolean;
+}
+
+export interface ExperimentLabResponse {
+  task_type: string;
+  target_column: string;
+  feature_sets: FeatureSetResult[];
+  best_feature_set: string;
+  summary: string;
+}
+
+export interface SampleDatasetItem {
+  id: string;
+  name: string;
+  description: string;
+  filename: string;
+  task_hint: string;
+  rows: number;
+  columns: number;
+}
+
+export interface SamplesListResponse {
+  samples: SampleDatasetItem[];
+  count: number;
+}
+
+export interface SampleLoadResponse {
+  session_id: string;
+  filename: string;
+  name: string;
+  rows: number;
+  columns: string[];
+  preview: Record<string, unknown>[];
+  column_types: Record<string, string>;
 }
 
 export interface AgentFinding {

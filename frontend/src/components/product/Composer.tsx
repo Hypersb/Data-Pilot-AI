@@ -45,9 +45,7 @@ export function Composer({
       : `input-shell ${size === "large" ? "rounded-2xl px-4 py-3" : "rounded-xl px-3 py-2.5"}`;
 
   const sendClass =
-    tone === "landing"
-      ? "bg-nepal-crimson text-white hover:bg-nepal-crimson-hover"
-      : "bg-nepal-crimson text-white hover:bg-nepal-crimson-hover";
+    "bg-brand text-brand-fg hover:bg-brand-hover";
 
   return (
     <form onSubmit={handleSubmit} className="w-full">

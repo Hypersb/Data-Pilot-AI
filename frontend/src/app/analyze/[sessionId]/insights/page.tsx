@@ -5,6 +5,15 @@ import { getCharts, getInsights } from "@/lib/api";
 import type { ChartsResponse, InsightsResponse } from "@/lib/types";
 import { ChartEmbed } from "@/components/charts/ChartEmbed";
 import { Panel } from "@/components/product/Panel";
+import { Badge } from "@/components/ui/Badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+
+const severityVariant: Record<string, "danger" | "warning" | "default" | "outline"> = {
+  high: "danger",
+  medium: "warning",
+  low: "outline",
+  info: "default",
+};
 
 export default function InsightsPage({
   params,
@@ -26,57 +35,64 @@ export default function InsightsPage({
           setCharts(c);
         }
       })
-      .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+      .catch((e) => { if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load"); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [sessionId]);
 
-  const severityColor: Record<string, string> = {
-    high: "text-danger",
-    medium: "text-nepal-crimson",
-    low: "text-text-muted",
-    info: "text-text-faint",
-  };
-
   return (
-    <Panel title="AI Insights" description="Rule-based insights grounded in statistical analysis." loading={loading}>
-      {error && <p className="text-sm text-danger">{error}</p>}
+    <Panel wide title="AI Insights" description="Statistical insights grounded in your data." loading={loading}>
+      {error && (
+        <p className="mb-4 rounded-md border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-danger">
+          {error}
+        </p>
+      )}
       {insights && (
         <div className="space-y-8">
           <p className="text-sm text-text-muted">{insights.count} insights detected</p>
-          <ul className="space-y-3">
-            {insights.insights.map((item, i) => (
-              <li key={i} className="rounded-xl border border-border bg-bg-panel p-4">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-text-primary">{item.title}</p>
-                  <span className={`text-xs uppercase ${severityColor[item.severity] ?? ""}`}>
-                    {item.severity}
-                  </span>
-                </div>
-                <p className="mt-2 text-sm leading-relaxed text-text-muted">{item.description}</p>
-                {item.related_columns.length > 0 && (
-                  <p className="mt-2 text-xs text-text-faint">
-                    Columns: {item.related_columns.join(", ")}
-                  </p>
-                )}
-              </li>
-            ))}
-          </ul>
+          {insights.count === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center text-sm text-text-muted">
+                No significant patterns detected. Try uploading a larger or more varied dataset.
+              </CardContent>
+            </Card>
+          ) : (
+            <ul className="space-y-3">
+              {insights.insights.map((item, i) => (
+                <li key={i}>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <CardTitle className="text-base">{item.title}</CardTitle>
+                        <Badge variant={severityVariant[item.severity] ?? "default"}>{item.severity}</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm leading-relaxed text-text-muted">{item.description}</p>
+                      {item.related_columns.length > 0 && (
+                        <p className="mt-2 text-xs text-text-faint">
+                          Columns: {item.related_columns.join(", ")}
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+          )}
           {charts && charts.charts.length > 0 && (
             <section>
               <h2 className="text-sm font-medium text-text-primary">Exploratory charts</h2>
               <div className="mt-4 grid gap-4 lg:grid-cols-2">
                 {charts.charts.map((c) => (
-                  <div key={c.id}>
-                    <p className="mb-2 text-xs text-text-faint">{c.title}</p>
-                    <ChartEmbed figure={c.figure as Record<string, unknown>} />
-                  </div>
+                  <Card key={c.id}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-normal text-text-faint">{c.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ChartEmbed figure={c.figure as Record<string, unknown>} />
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             </section>

@@ -1,0 +1,121 @@
+title,type,duration_min,rating,release_year,country
+Title 1,TV Show,48,8.6,2022,UK
+Title 2,Movie,136,6.2,2011,India
+Title 3,Movie,179,8.1,2014,Japan
+Title 4,TV Show,45,6.2,2010,Korea
+Title 5,Movie,143,9.2,2015,UK
+Title 6,Movie,163,7.9,2011,India
+Title 7,Movie,44,6.5,2013,Japan
+Title 8,Movie,73,6.2,2015,Japan
+Title 9,Movie,175,5.9,2019,US
+Title 10,Movie,92,8.1,2020,US
+Title 11,TV Show,139,6.0,2017,UK
+Title 12,TV Show,75,7.7,2021,US
+Title 13,TV Show,84,6.2,2017,UK
+Title 14,Movie,112,8.0,2020,Korea
+Title 15,TV Show,105,8.7,2015,UK
+Title 16,Movie,99,8.5,2013,US
+Title 17,Movie,127,8.4,2017,Korea
+Title 18,Movie,137,5.8,2022,US
+Title 19,Movie,176,5.4,2017,UK
+Title 20,TV Show,102,8.1,2019,India
+Title 21,Movie,166,6.7,2023,Japan
+Title 22,TV Show,34,6.9,2010,US
+Title 23,Movie,150,5.1,2013,UK
+Title 24,TV Show,158,6.2,2013,Korea
+Title 25,TV Show,49,5.2,2016,US
+Title 26,TV Show,76,9.0,2023,US
+Title 27,TV Show,165,6.1,2023,Japan
+Title 28,TV Show,147,7.5,2020,UK
+Title 29,TV Show,67,5.2,2016,India
+Title 30,Movie,155,8.0,2022,Korea
+Title 31,TV Show,41,6.5,2020,UK
+Title 32,Movie,25,9.0,2024,Korea
+Title 33,TV Show,123,9.0,2017,US
+Title 34,Movie,55,6.5,2020,Japan
+Title 35,TV Show,98,9.1,2014,Japan
+Title 36,TV Show,135,9.5,2016,India
+Title 37,Movie,76,8.7,2017,Japan
+Title 38,TV Show,68,8.8,2024,US
+Title 39,TV Show,101,6.1,2018,India
+Title 40,TV Show,85,7.6,2012,UK
+Title 41,Movie,96,5.3,2012,Japan
+Title 42,TV Show,64,5.4,2013,India
+Title 43,Movie,98,9.5,2014,US
+Title 44,TV Show,39,6.5,2019,Korea
+Title 45,TV Show,142,8.4,2010,Korea
+Title 46,Movie,86,8.6,2024,US
+Title 47,TV Show,102,8.9,2024,US
+Title 48,TV Show,22,9.5,2016,Korea
+Title 49,Movie,83,6.1,2018,India
+Title 50,TV Show,59,5.2,2017,Korea
+Title 51,Movie,78,6.9,2024,US
+Title 52,Movie,81,5.6,2024,Japan
+Title 53,Movie,151,5.1,2014,UK
+Title 54,TV Show,79,6.6,2023,Japan
+Title 55,Movie,135,8.5,2023,Japan
+Title 56,Movie,94,7.5,2013,US
+Title 57,TV Show,141,6.4,2021,Korea
+Title 58,Movie,126,7.9,2016,India
+Title 59,TV Show,115,6.0,2014,Japan
+Title 60,TV Show,110,5.1,2016,Korea
+Title 61,TV Show,177,8.4,2021,India
+Title 62,TV Show,149,7.8,2010,Japan
+Title 63,Movie,81,8.4,2010,India
+Title 64,Movie,68,5.2,2019,Korea
+Title 65,Movie,156,8.8,2023,UK
+Title 66,Movie,111,7.8,2022,Korea
+Title 67,Movie,178,7.5,2012,US
+Title 68,TV Show,143,7.8,2023,India
+Title 69,Movie,80,8.9,2020,UK
+Title 70,Movie,67,7.6,2011,India
+Title 71,Movie,172,7.6,2011,India
+Title 72,TV Show,155,9.5,2016,Japan
+Title 73,TV Show,77,8.4,2021,US
+Title 74,Movie,120,7.0,2019,India
+Title 75,TV Show,131,8.2,2011,Korea
+Title 76,Movie,81,6.8,2020,Korea
+Title 77,Movie,58,6.0,2013,Japan
+Title 78,TV Show,77,7.7,2011,US
+Title 79,TV Show,118,9.2,2015,US
+Title 80,Movie,63,9.2,2017,Korea
+Title 81,Movie,48,6.5,2019,UK
+Title 82,TV Show,78,7.4,2013,Japan
+Title 83,Movie,90,6.0,2024,Japan
+Title 84,TV Show,111,9.5,2014,Korea
+Title 85,Movie,28,9.4,2013,Korea
+Title 86,TV Show,146,7.9,2012,UK
+Title 87,Movie,153,8.6,2014,UK
+Title 88,Movie,176,8.2,2023,US
+Title 89,TV Show,164,7.7,2018,Japan
+Title 90,Movie,163,5.2,2017,Japan
+Title 91,Movie,150,7.0,2017,Korea
+Title 92,TV Show,40,8.0,2017,US
+Title 93,Movie,83,8.0,2021,Japan
+Title 94,Movie,109,6.7,2017,US
+Title 95,Movie,55,9.2,2016,US
+Title 96,TV Show,81,5.8,2017,Korea
+Title 97,TV Show,95,7.3,2020,US
+Title 98,TV Show,32,8.1,2023,UK
+Title 99,Movie,30,8.1,2017,UK
+Title 100,Movie,73,7.9,2022,India
+Title 101,Movie,35,6.2,2023,Korea
+Title 102,Movie,27,5.7,2017,India
+Title 103,TV Show,123,7.9,2021,UK
+Title 104,Movie,78,7.7,2019,India
+Title 105,Movie,76,5.8,2016,Korea
+Title 106,Movie,59,8.2,2021,Korea
+Title 107,TV Show,149,7.0,2010,US
+Title 108,Movie,113,8.0,2013,Japan
+Title 109,Movie,157,8.8,2022,US
+Title 110,Movie,63,5.8,2022,Korea
+Title 111,Movie,158,5.1,2013,UK
+Title 112,Movie,99,8.5,2014,UK
+Title 113,TV Show,100,7.7,2019,US
+Title 114,Movie,21,8.1,2015,Korea
+Title 115,Movie,159,8.8,2013,UK
+Title 116,Movie,134,8.6,2024,Korea
+Title 117,Movie,109,9.3,2011,UK
+Title 118,Movie,42,7.4,2015,Korea
+Title 119,Movie,165,7.2,2024,India
+Title 120,Movie,81,6.8,2017,Korea

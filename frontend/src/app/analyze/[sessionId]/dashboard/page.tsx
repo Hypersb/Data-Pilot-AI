@@ -5,6 +5,7 @@ import { getDashboard } from "@/lib/api";
 import type { DashboardResponse } from "@/lib/types";
 import { ChartEmbed } from "@/components/charts/ChartEmbed";
 import { Panel } from "@/components/product/Panel";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 export default function DashboardPage({
   params,
@@ -28,34 +29,48 @@ export default function DashboardPage({
   const chartKeys = data ? Object.keys(data.chart_data) : [];
 
   return (
-    <Panel title="Dashboard" description="Auto-generated KPIs and charts from schema analysis." loading={loading}>
-      {error && <p className="text-sm text-danger">{error}</p>}
+    <Panel wide title="Dashboard" description="Auto-generated KPIs and visual analytics." loading={loading}>
+      {error && (
+        <p className="mb-4 rounded-md border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-danger">
+          {error}
+        </p>
+      )}
       {data && (
         <div className="space-y-8">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {data.kpis.map((k) => (
-              <div key={k.column} className="rounded-xl border border-border bg-bg-panel p-4">
-                <p className="text-xs text-text-faint">{k.label}</p>
-                <p className="mt-1 text-xl font-semibold text-text-primary">
-                  {k.value.toLocaleString()}
-                </p>
-                <p className="text-xs text-text-muted">{k.aggregation}</p>
-              </div>
+              <Card key={k.column}>
+                <CardContent className="py-5">
+                  <p className="text-xs font-medium uppercase tracking-wider text-text-faint">{k.label}</p>
+                  <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">
+                    {k.value.toLocaleString()}
+                  </p>
+                  <p className="mt-1 text-xs text-text-muted">{k.aggregation}</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
           {data.quality_alerts.length > 0 && (
-            <section>
-              <h2 className="text-sm font-medium text-text-primary">Quality alerts</h2>
-              <ul className="mt-3 space-y-2">
-                {data.quality_alerts.map((a, i) => (
-                  <li key={i} className="text-sm text-text-muted">• {a}</li>
-                ))}
-              </ul>
-            </section>
+            <Card>
+              <CardHeader>
+                <CardTitle>Quality alerts</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2">
+                  {data.quality_alerts.map((a, i) => (
+                    <li key={i} className="text-sm text-text-muted">• {a}</li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
           )}
           <div className="grid gap-6 lg:grid-cols-2">
             {chartKeys.map((key) => (
-              <ChartEmbed key={key} figure={data.chart_data[key] as Record<string, unknown>} />
+              <Card key={key}>
+                <CardContent className="pt-6">
+                  <ChartEmbed figure={data.chart_data[key] as Record<string, unknown>} />
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>

@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 import { getProfile, getInsights } from "@/lib/api";
 import type { InsightsResponse, ProfileResponse } from "@/lib/types";
 import { Panel } from "@/components/product/Panel";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 export default function DataPage({
   params,
@@ -18,41 +19,40 @@ export default function DataPage({
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
     Promise.all([getProfile(sessionId), getInsights(sessionId)])
       .then(([p, i]) => {
-        if (cancelled) return;
-        setProfile(p);
-        setInsights(i);
+        if (!cancelled) {
+          setProfile(p);
+          setInsights(i);
+        }
       })
-      .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+      .catch((e) => { if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load"); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [sessionId]);
 
   return (
-    <Panel title="Overview" description="Structure and signals in your dataset." loading={loading}>
-      {error && <p className="text-sm text-danger">{error}</p>}
+    <Panel wide title="Data" description="Dataset structure, quality metrics, and key signals." loading={loading}>
+      {error && (
+        <p className="mb-4 rounded-md border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-danger">
+          {error}
+        </p>
+      )}
       {profile && (
         <div className="space-y-8">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {[
               { l: "Rows", v: profile.rows.toLocaleString() },
               { l: "Columns", v: profile.columns },
               { l: "Quality", v: profile.quality_score },
               { l: "Complete", v: `${profile.completeness_pct}%` },
             ].map((s) => (
-              <div key={s.l} className="rounded-xl border border-border bg-bg-panel p-4">
-                <p className="text-xs text-text-faint">{s.l}</p>
-                <p className="mt-1 text-xl font-semibold text-text-primary">{s.v}</p>
-              </div>
+              <Card key={s.l}>
+                <CardContent className="py-5">
+                  <p className="text-xs font-medium uppercase tracking-wider text-text-faint">{s.l}</p>
+                  <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">{s.v}</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
           {insights && insights.count > 0 && (
@@ -60,10 +60,14 @@ export default function DataPage({
               <h2 className="text-sm font-medium text-text-primary">Key insights</h2>
               <ul className="mt-4 space-y-3">
                 {insights.insights.slice(0, 5).map((item, i) => (
-                  <li key={i} className="rounded-xl border border-border bg-bg-panel p-4">
-                    <p className="text-sm font-medium text-text-primary">{item.title}</p>
-                    <p className="mt-1 text-sm leading-relaxed text-text-muted">{item.description}</p>
-                  </li>
+                  <Card key={i}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">{item.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm leading-relaxed text-text-muted">{item.description}</p>
+                    </CardContent>
+                  </Card>
                 ))}
               </ul>
             </section>

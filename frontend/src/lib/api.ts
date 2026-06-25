@@ -67,6 +67,11 @@ export async function runAutoML(
   return handleResponse<import("./types").AutoMLResponse>(res);
 }
 
+export async function getModelArena(sessionId: string) {
+  const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/models`);
+  return handleResponse<import("./types").ModelArenaResponse>(res);
+}
+
 export async function getXAI(
   sessionId: string,
   params?: { target_column?: string; row_index?: number }
@@ -179,6 +184,21 @@ export async function getReportV2(sessionId: string, format: "markdown" | "pdf" 
 export async function getExperiments(sessionId: string) {
   const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/experiments`);
   return handleResponse<import("./types").ExperimentsListResponse>(res);
+}
+
+export async function getExperimentLab(sessionId: string) {
+  const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/experiments/lab`);
+  return handleResponse<import("./types").ExperimentLabResponse>(res);
+}
+
+export async function getSampleDatasets() {
+  const res = await fetch(`${API_BASE}/api/samples`);
+  return handleResponse<import("./types").SamplesListResponse>(res);
+}
+
+export async function loadSampleDataset(sampleId: string) {
+  const res = await fetch(`${API_BASE}/api/samples/${sampleId}/load`, { method: "POST" });
+  return handleResponse<import("./types").SampleLoadResponse>(res);
 }
 
 export async function runTeamAnalysis(sessionId: string) {

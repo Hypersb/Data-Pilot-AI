@@ -1,9 +1,12 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
+import { Download } from "lucide-react";
 import { getReportV2 } from "@/lib/api";
 import type { ReportV2Response } from "@/lib/types";
 import { Panel } from "@/components/product/Panel";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 export default function ReportPage({
   params,
@@ -14,6 +17,7 @@ export default function ReportPage({
   const [report, setReport] = useState<ReportV2Response | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -25,46 +29,70 @@ export default function ReportPage({
   }, [sessionId]);
 
   const download = async (format: "pdf" | "pptx") => {
-    const blob = (await getReportV2(sessionId, format)) as Blob;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `report.${format}`;
-    a.click();
-    URL.revokeObjectURL(url);
+    setDownloading(format);
+    try {
+      const blob = (await getReportV2(sessionId, format)) as Blob;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `prisma-report.${format}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setDownloading(null);
+    }
   };
 
   return (
-    <Panel title="Executive Report" description="Summary, findings, risks, and recommendations." loading={loading}>
-      {error && <p className="text-sm text-danger">{error}</p>}
+    <Panel
+      wide
+      title="Executive Report"
+      description="Consulting-grade deliverable — cover page, findings, forecasts, models, and recommendations."
+      loading={loading}
+    >
+      {error && (
+        <p className="mb-4 rounded-md border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-danger">
+          {error}
+        </p>
+      )}
       {report && (
         <div className="space-y-6">
-          <div className="flex gap-3">
-            <button type="button" onClick={() => download("pdf")} className="rounded-lg border border-border px-4 py-2 text-sm">
-              Download PDF
-            </button>
-            <button type="button" onClick={() => download("pptx")} className="rounded-lg border border-border px-4 py-2 text-sm">
-              Download PowerPoint
-            </button>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="primary" className="gap-2" onClick={() => download("pdf")} disabled={!!downloading}>
+              <Download className="h-4 w-4" aria-hidden />
+              {downloading === "pdf" ? "Generating…" : "Download PDF"}
+            </Button>
+            <Button variant="secondary" className="gap-2" onClick={() => download("pptx")} disabled={!!downloading}>
+              <Download className="h-4 w-4" aria-hidden />
+              {downloading === "pptx" ? "Generating…" : "Download PowerPoint"}
+            </Button>
           </div>
-          <section className="rounded-xl border border-border bg-bg-panel p-5">
-            <h2 className="text-sm font-medium text-nepal-crimson">Executive Summary</h2>
-            <p className="mt-3 text-sm leading-relaxed text-text-primary">{report.executive_summary}</p>
-          </section>
+          <Card className="border-brand/20">
+            <CardHeader>
+              <CardTitle>Executive Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm leading-relaxed text-text-secondary">{report.executive_summary}</p>
+            </CardContent>
+          </Card>
           {[
             { title: "Key Findings", items: report.key_findings },
             { title: "Risks", items: report.risks },
             { title: "Opportunities", items: report.opportunities },
             { title: "Recommendations", items: report.recommendations },
           ].map((s) => (
-            <section key={s.title}>
-              <h2 className="text-sm font-medium text-text-primary">{s.title}</h2>
-              <ul className="mt-3 space-y-2">
-                {(s.items.length ? s.items : ["None identified."]).map((item, i) => (
-                  <li key={i} className="text-sm text-text-muted">• {item}</li>
-                ))}
-              </ul>
-            </section>
+            <Card key={s.title}>
+              <CardHeader>
+                <CardTitle>{s.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2">
+                  {(s.items.length ? s.items : ["None identified."]).map((item, i) => (
+                    <li key={i} className="text-sm text-text-muted">• {item}</li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
