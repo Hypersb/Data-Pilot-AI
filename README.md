@@ -62,9 +62,6 @@ Prisma AI is an **open-source AI data analyst platform**. Upload CSV or Excel an
   <img src="docs/assets/report.png" alt="Executive report" width="720" />
 </p>
 
-### Product demo
-
-Upload → Overview → Ask Prisma → Executive Report in under 60 seconds with a sample dataset. See [docs/v3-demo-script.md](docs/v3-demo-script.md) for a timed walkthrough.
 
 ---
 
@@ -411,11 +408,9 @@ npm run lint
 
 ## Roadmap
 
-- [ ] Live demo URL (Vercel + hosted API)
 - [ ] Persistent sessions (PostgreSQL or Redis)
 - [ ] User authentication and multi-tenant workspaces
 - [ ] Cached ML artifacts per session
-- [ ] Demo GIF in README
 - [ ] OpenAPI TypeScript client generation
 
 ---
@@ -425,7 +420,6 @@ npm run lint
 | Document | Description |
 |----------|-------------|
 | [Architecture](docs/architecture.md) | Data flow, ML pipelines, agent safety |
-| [V3 demo script](docs/v3-demo-script.md) | 3-minute Next.js walkthrough |
 | [Streamlit demo script](docs/streamlit-demo-script.md) | Optional dashboard walkthrough |
 | [Project evaluation](docs/project_evaluation.md) | Recruiter-facing strengths and scope |
 | [Resume bullets](docs/resume_bullets.md) | Role-targeted project bullets |
