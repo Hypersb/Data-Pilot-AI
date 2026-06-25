@@ -2,18 +2,22 @@
 
 ## System Overview
 
-Prisma AI is an API-first data analysis platform with a Streamlit dashboard. Users upload CSV or Excel files; the backend profiles the data, runs analytics and ML pipelines, and returns structured JSON responses. The UI consumes the same service layer as the REST API.
+Prisma AI is an API-first data analysis platform. The **Next.js web app** is the primary UI; an optional **Streamlit dashboard** is also available. Users upload CSV or Excel files; the backend profiles the data, runs analytics and ML pipelines, and returns structured JSON responses.
 
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────────────┐
-│  Streamlit UI   │────▶│  Service Layer   │◀────│  FastAPI REST API       │
-│  (dashboard)    │     │  (Python)        │     │  (/api/sessions/...)    │
+│  Next.js Web    │────▶│  Service Layer   │◀────│  FastAPI REST API       │
+│  App (:3000)    │     │  (Python)        │     │  (/api/sessions/...)    │
 └─────────────────┘     └────────┬─────────┘     └─────────────────────────┘
-                                 │
-                    ┌────────────┼────────────┐
-                    ▼            ▼            ▼
-              In-memory    Analytics/ML    Ollama (optional)
-              SessionStore   Engines         LLM planning & narrative
+        │                        │
+        │              ┌─────────┴─────────┐
+        │              ▼                   ▼
+        │        In-memory           Analytics/ML
+        │        SessionStore          Engines
+        │              │                   │
+        └──────────────┼───────────────────┘
+                       ▼
+              Ollama (optional LLM)
 ```
 
 ### Components
@@ -21,11 +25,12 @@ Prisma AI is an API-first data analysis platform with a Streamlit dashboard. Use
 | Component | Location | Role |
 |-----------|----------|------|
 | FastAPI app | `backend/app/main.py` | HTTP routing, CORS, health check |
-| Routers | `backend/app/routers/` | Upload, profile, insights, charts, forecast, AutoML, XAI, anomalies, chat, report |
+| Routers | `backend/app/routers/` | Upload, profile, insights, charts, forecast, AutoML, XAI, anomalies, chat, report, health, dashboard, team, samples, and more |
 | Services | `backend/app/services/` | Business logic — ingest, profiler, insight engine, viz, forecast, AutoML, SHAP, anomalies, agent |
 | Schemas | `backend/app/schemas/` | Pydantic request/response models |
-| Streamlit UI | `backend/streamlit_app/main.py` | Primary user interface |
-| Tests | `backend/tests/` | Pytest suite (73 tests) |
+| Next.js UI | `frontend/src/app/` | **Primary user interface** |
+| Streamlit UI | `backend/streamlit_app/main.py` | Optional dashboard |
+| Tests | `backend/tests/` | Pytest suite |
 
 ---
 
@@ -33,7 +38,7 @@ Prisma AI is an API-first data analysis platform with a Streamlit dashboard. Use
 
 ### 1. Upload and session
 
-1. User uploads a file via Streamlit or `POST /api/upload`.
+1. User uploads a file via the Next.js app, Streamlit, or `POST /api/upload`.
 2. `ingest.py` parses CSV/Excel and validates file type.
 3. A session ID is created; the DataFrame is stored in an in-memory `SessionStore`.
 4. Preview rows and inferred column types are returned.
@@ -175,5 +180,6 @@ LLM writes explanation using ONLY those facts (or template fallback if Ollama is
 ## Related Documentation
 
 - [README](../README.md) — setup and API reference
-- [Demo script](./demo_script.md) — presentation walkthrough
+- [V3 demo script](./v3-demo-script.md) — recommended Next.js walkthrough
+- [Streamlit demo script](./streamlit-demo-script.md) — optional dashboard walkthrough
 - [Project evaluation](./project_evaluation.md) — recruiter-facing summary

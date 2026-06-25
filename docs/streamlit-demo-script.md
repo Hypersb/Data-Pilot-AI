@@ -1,6 +1,13 @@
-# Prisma AI — Demo Script
+# Prisma AI — Streamlit Demo Script
 
-Use `sample-data/sales.csv` unless noted. Have Streamlit running: `streamlit run streamlit_app/main.py`.
+> **Note:** The primary UI for v3 is the **Next.js web app**. For the recommended recruiter demo, use [v3-demo-script.md](./v3-demo-script.md). This script covers the optional Streamlit dashboard.
+
+Use `sample-data/sales.csv` unless noted. Start Streamlit from the backend directory:
+
+```bash
+cd backend
+streamlit run streamlit_app/main.py
+```
 
 ---
 
@@ -26,7 +33,7 @@ Use `sample-data/sales.csv` unless noted. Have Streamlit running: `streamlit run
 
 **[1:30 – 2:00] Close**
 
-> “Under the hood: FastAPI, scikit-learn, SHAP, 73 tests. Everything is API-accessible, so the same logic powers the UI and integrations. Happy to walk through architecture or tests.”
+> “Under the hood: FastAPI, scikit-learn, SHAP, automated tests. Everything is API-accessible, so the same logic powers the UI and integrations. Happy to walk through architecture or tests.”
 
 ---
 
@@ -34,7 +41,7 @@ Use `sample-data/sales.csv` unless noted. Have Streamlit running: `streamlit run
 
 **[0:00 – 0:45] Problem + architecture**
 
-> “Prisma AI is API-first: upload creates a session, routers call service engines, Pydantic validates responses. Streamlit is one client; FastAPI is the contract.”
+> “Prisma AI is API-first: upload creates a session, routers call service engines, Pydantic validates responses. Next.js is the primary web client; Streamlit is an optional dashboard; FastAPI is the contract.”
 
 Show project tree briefly: `backend/app/routers/`, `backend/app/services/`, `backend/tests/`.
 
@@ -47,7 +54,7 @@ Show project tree briefly: `backend/app/routers/`, `backend/app/services/`, `bac
 
 1. **Insights** — rule-based engine (correlations, outliers, trends).
 2. **Charts** — Plotly JSON from `viz_engine`.
-3. Optional: open http://localhost:8000/docs and show `/insights`, `/charts`.
+3. Optional: open http://127.0.0.1:8080/docs and show `/insights`, `/charts`.
 
 **[2:30 – 3:30] ML pipelines**
 
@@ -61,7 +68,7 @@ Show project tree briefly: `backend/app/routers/`, `backend/app/services/`, `bac
 1. **AI Data Analyst** — ask:
    - “Which region has the highest revenue?” → `top_n_by_metric`
    - “Forecast next month’s revenue” → `forecast_metric`
-   - “What variables influence profit most?” → `model_explanation` (use a dataset with clear features if needed)
+   - “What variables influence profit most?” → `model_explanation`
 
 2. Expand **Sources** — cite grounded facts.
 
@@ -69,7 +76,7 @@ Show project tree briefly: `backend/app/routers/`, `backend/app/services/`, `bac
 
 **[4:30 – 5:00] Quality + limitations**
 
-1. Mention **73 pytest tests** — `pytest tests/ -v`.
+1. Mention automated pytest suite — `pytest tests/ -v`.
 2. **Report tab** — markdown executive summary.
 3. Honest limits: in-memory sessions, no auth, Ollama optional for LLM polish.
 
@@ -83,7 +90,7 @@ Show project tree briefly: `backend/app/routers/`, `backend/app/services/`, `bac
 >
 > For natural language, I used a tool-calling agent — the model selects one of eight tools, arguments are validated with Pydantic, and answers are built from tool output so we don’t hallucinate metrics or execute user code.
 >
-> The Streamlit UI is the main frontend, but every feature is also a REST endpoint. I have 73 automated tests covering the API, ML engines, and agent routing.
+> The Next.js app is the primary UI, with an optional Streamlit dashboard. Every feature is also a REST endpoint with automated tests covering the API, ML engines, and agent routing.
 >
 > It’s an MVP: sessions are in-memory, there’s no auth yet, and Ollama is optional for LLM narratives — but the analytics and ML paths work standalone.”
 
@@ -95,6 +102,6 @@ Show project tree briefly: `backend/app/routers/`, `backend/app/services/`, `bac
 |----------|--------------|
 | How do you prevent the LLM from hallucinating numbers? | Tool calling only; answers cite facts from service output. |
 | How do you pick the best forecast model? | Rolling-window backtest; rank by MAPE; forecast with winner. |
-| Why FastAPI + Streamlit? | API-first for testing and integrations; Streamlit for fast demo UI. |
+| Why FastAPI + Next.js? | API-first for testing and integrations; Next.js for the product UI. |
 | Biggest limitation? | In-memory sessions — production would need persistent storage and auth. |
 | What would you add next? | Database-backed sessions, auth, and cached ML artifacts per session. |

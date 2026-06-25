@@ -49,4 +49,4 @@ Open **Advanced** in the sidebar for V2 depth:
 
 ## Closing line
 
-“Prisma AI is my graduation-ready AI Business Analyst — upload data, get insights, forecasts, and a PDF report, then talk to your data in plain English.”
+“Prisma AI is my AI-powered analytics platform — upload data, get insights, forecasts, and a PDF report, then talk to your data in plain English.”

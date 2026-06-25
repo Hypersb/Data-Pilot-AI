@@ -4,15 +4,15 @@ A recruiter- and interviewer-oriented assessment of what this project demonstrat
 
 ---
 
-## Why This Is Stronger Than a Typical Student Project
+## Why This Stands Out as a Production Analytics Platform
 
-| Typical student project | Prisma AI |
+| Typical analytics demo | Prisma AI |
 |-------------------------|-----------|
 | Single Jupyter notebook | Modular Python services + REST API + UI |
 | One ML model on a fixed dataset | AutoML with task detection + model leaderboard |
 | Static matplotlib charts | Plotly charts via API JSON; dashboard tabs |
 | “Chat with your data” via prompt + pandas exec | Tool-calling agent with Pydantic validation — no arbitrary code |
-| No tests or a few smoke tests | **73 pytest tests** across API, ML, and agent |
+| No tests or a few smoke tests | **Automated pytest suite** across API, ML, and agent |
 | README with install steps only | Architecture docs, demo script, resume bullets |
 
 The project shows **product thinking** (upload → insight → action), **ML engineering** (backtesting, model comparison, SHAP), and **software discipline** (schemas, routers, tests).
@@ -67,7 +67,7 @@ The project shows **product thinking** (upload → insight → action), **ML eng
 
 ### For Software Engineer roles
 
-- **73 tests** — signals maintainability and regression awareness.
+- **Automated tests** — signals maintainability and regression awareness.
 - Clean **module boundaries** — easy to describe in system design interviews.
 - Optional LLM (Ollama) **does not block** core paths — good degradation story.
 
@@ -77,9 +77,9 @@ The project shows **product thinking** (upload → insight → action), **ML eng
 
 - **In-memory sessions** — data is not persisted to a database; sessions expire.
 - **No authentication** — suitable for MVP/demo, not multi-tenant production.
-- **Streamlit + API share services** — Streamlit does not always call HTTP locally (known dual-path pattern).
+- **Streamlit + API share services** — Streamlit can import services directly for local development (dual-path pattern).
 - **Ollama optional** — agent uses heuristic tool selection and template answers when LLM is offline.
-- **Legacy Next.js frontend** in `frontend/` is not the primary UI; Streamlit is the maintained dashboard.
+- **Next.js is the primary UI** — Streamlit remains available as an optional dashboard for demos and development.
 
 Framing limitations as conscious MVP scope reads better than overselling.
 
@@ -87,10 +87,10 @@ Framing limitations as conscious MVP scope reads better than overselling.
 
 ## Suggested GitHub README Signals
 
-- Badges: Python, FastAPI, Streamlit, pytest, test count
+- Badges: Python, FastAPI, Next.js, pytest
 - Link to `docs/architecture.md` for depth
-- Screenshot placeholders for Forecast, AutoML, and AI Data Analyst tabs
-- “73 tests passing” in CI or manual test instructions
+- Screenshots in `docs/assets/` for landing, overview, forecast, chat, and report
+- CI badge via GitHub Actions
 
 ---
 
