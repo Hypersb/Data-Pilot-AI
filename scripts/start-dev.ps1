@@ -33,4 +33,4 @@ Start-Process powershell -ArgumentList @(
 Start-Sleep -Seconds 4
 $health = Invoke-RestMethod -Uri "http://127.0.0.1:8080/health" -TimeoutSec 5
 Write-Host "Backend: $($health.status) v$($health.version)"
-Write-Host "Open http://localhost:3000 — upload a new dataset after each restart."
+Write-Host "Open http://localhost:3000 - upload a new dataset after each restart."
