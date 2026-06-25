@@ -25,7 +25,6 @@
 [![Tests](https://img.shields.io/badge/tests-97%20passing-0A9EDC?logo=pytest&logoColor=white)](backend/tests/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-> **Live demo:** Deploy the frontend to [Vercel](https://vercel.com) and API to [Render](https://render.com) — see [docs/DEPLOY.md](docs/DEPLOY.md). Set `NEXT_PUBLIC_API_URL` to your API URL.
 
 ---
 
