@@ -15,6 +15,6 @@ lightgbm>=4.0.0
 prophet>=1.1.0
 shap>=0.44.0
 reportlab>=4.2.0
-python-pptx>=1.0.0
+python-pptx>=1.0.2
 sqlparse>=0.5.0
 markdown>=3.7
