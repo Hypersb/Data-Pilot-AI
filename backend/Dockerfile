@@ -5,11 +5,15 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc g++ && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app ./app
-COPY streamlit_app ./streamlit_app
+COPY backend/app ./app
+COPY backend/streamlit_app ./streamlit_app
+COPY sample-data /sample-data
+COPY assets /assets
+
+ENV SAMPLES_DIR=/sample-data
 
 EXPOSE 8000
 

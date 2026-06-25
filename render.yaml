@@ -1,9 +1,17 @@
+# Prisma AI — Render deployment
+#
+# Recommended production split:
+#   - API: prisma-ai-api (this Docker service)
+#   - Web UI: deploy frontend/ to Vercel (Next.js is the primary UI)
+#
+# The Streamlit service below is optional for legacy dashboard hosting only.
+
 services:
   - type: web
     name: prisma-ai-api
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
+    dockerContext: .
     envVars:
       - key: CORS_ORIGINS
         sync: false
@@ -15,9 +23,12 @@ services:
         value: "7200"
       - key: MAX_UPLOAD_MB
         value: "25"
+      - key: SAMPLES_DIR
+        value: /sample-data
 
+  # Optional — Streamlit dashboard (not the primary Next.js UI)
   - type: web
-    name: prisma-ai-ui
+    name: prisma-ai-streamlit
     runtime: python
     rootDir: backend
     buildCommand: pip install -r requirements.txt
@@ -27,3 +38,5 @@ services:
         sync: false
       - key: OLLAMA_MODEL
         value: llama3.2
+      - key: SAMPLES_DIR
+        value: ../sample-data

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings
 
 
@@ -8,6 +10,7 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "llama3.2"
     ollama_timeout: float = 120.0
+    samples_dir: str | None = None
 
     @property
     def cors_origin_list(self) -> list[str]:
@@ -16,6 +19,12 @@ class Settings(BaseSettings):
     @property
     def max_upload_bytes(self) -> int:
         return self.max_upload_mb * 1024 * 1024
+
+    @property
+    def resolved_samples_dir(self) -> Path:
+        if self.samples_dir:
+            return Path(self.samples_dir)
+        return Path(__file__).resolve().parent.parent.parent / "sample-data"
 
 
 settings = Settings()
