@@ -89,6 +89,7 @@ class ForecastExecutiveSummary(BaseModel):
     best_case: float
     worst_case: float
     ai_commentary: str
+    plain_english: str = ""
 
 
 class ForecastLeaderboardResponse(BaseModel):

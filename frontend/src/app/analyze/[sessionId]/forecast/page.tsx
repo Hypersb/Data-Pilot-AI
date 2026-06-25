@@ -68,6 +68,11 @@ export default function ForecastPage({
             </CardHeader>
             <CardContent>
               <p className="text-[15px] leading-relaxed text-text-secondary">{exec.ai_commentary}</p>
+              {exec.plain_english && (
+                <p className="mt-4 rounded-lg border border-border bg-bg-root px-4 py-3 text-sm leading-relaxed text-text-primary">
+                  {exec.plain_english}
+                </p>
+              )}
             </CardContent>
           </Card>
 

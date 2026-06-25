@@ -15,10 +15,12 @@ import {
   Sparkles,
   TrendingUp,
 } from "lucide-react";
-import { getAnalysis, getHealth } from "@/lib/api";
+import { getAnalysis, getHealth, isSessionExpiredError } from "@/lib/api";
 import type { AnalysisResponse, HealthResponse, InsightItem } from "@/lib/types";
 import { ChartEmbed } from "@/components/charts/ChartEmbed";
 import { Panel } from "@/components/product/Panel";
+import { OnboardingTour } from "@/components/product/OnboardingTour";
+import { SessionExpired } from "@/components/product/SessionExpired";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -235,6 +237,7 @@ export default function AnalysisHubPage({
   const [loading, setLoading] = useState(true);
   const [stepIndex, setStepIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [fetchKey, setFetchKey] = useState(0);
 
   const retry = useCallback(() => {
@@ -245,6 +248,7 @@ export default function AnalysisHubPage({
     let cancelled = false;
     setLoading(true);
     setError(null);
+    setSessionExpired(false);
     setData(null);
     setHealth(null);
     setStepIndex(0);
@@ -264,7 +268,13 @@ export default function AnalysisHubPage({
         }
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Analysis failed");
+        if (!cancelled) {
+          if (isSessionExpiredError(e)) {
+            setSessionExpired(true);
+          } else {
+            setError(e instanceof Error ? e.message : "Analysis failed");
+          }
+        }
       })
       .finally(() => {
         if (!cancelled) {
@@ -292,6 +302,10 @@ export default function AnalysisHubPage({
       ? data.forecast.explanation
       : data?.forecast_message;
 
+  if (sessionExpired) {
+    return <SessionExpired />;
+  }
+
   return (
     <Panel
       wide
@@ -305,7 +319,7 @@ export default function AnalysisHubPage({
 
       {!loading && !error && data && (
         <div className="space-y-8">
-          {/* Dataset summary */}
+          <OnboardingTour />
           <section aria-labelledby="summary-heading">
             <SectionHeader id="summary-heading" title="Dataset summary" />
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -325,7 +339,7 @@ export default function AnalysisHubPage({
                     id="health-heading"
                     title="Data health"
                     href={`/analyze/${sessionId}/health`}
-                    linkLabel="Health center"
+                    linkLabel="Data Health"
                   />
                   {health ? (
                     <HealthRing score={health.overall_score} />

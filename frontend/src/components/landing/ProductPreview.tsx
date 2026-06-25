@@ -10,8 +10,15 @@ import {
 } from "lucide-react";
 
 const SIDEBAR = [
-  { section: "Analysis", items: ["Overview", "Insights", "Forecast", "Models"] },
-  { section: "Intelligence", items: ["Root Cause", "Anomalies", "Health"] },
+  {
+    section: "Analysis",
+    items: ["Overview", "Insights", "Forecast", "Ask Prisma", "Executive Report"],
+  },
+  {
+    section: "Intelligence",
+    items: ["Data Health", "Root Cause", "Executive Summary", "Analyst Team"],
+  },
+  { section: "Advanced", items: ["Charts", "Model Arena", "Compare"] },
 ] as const;
 
 function RevenueChart() {
@@ -112,10 +119,13 @@ export function ProductPreview() {
                     {item === "Overview" && <BarChart3 className="h-3 w-3 shrink-0" aria-hidden />}
                     {item === "Insights" && <Sparkles className="h-3 w-3 shrink-0" aria-hidden />}
                     {item === "Forecast" && <LineChart className="h-3 w-3 shrink-0" aria-hidden />}
-                    {item === "Models" && <Activity className="h-3 w-3 shrink-0" aria-hidden />}
+                    {item === "Ask Prisma" && <Sparkles className="h-3 w-3 shrink-0" aria-hidden />}
+                    {item === "Executive Report" && <BarChart3 className="h-3 w-3 shrink-0" aria-hidden />}
+                    {item === "Data Health" && <Activity className="h-3 w-3 shrink-0" aria-hidden />}
                     {item === "Root Cause" && <TrendingDown className="h-3 w-3 shrink-0" aria-hidden />}
-                    {item === "Anomalies" && <Activity className="h-3 w-3 shrink-0" aria-hidden />}
-                    {item === "Health" && <Activity className="h-3 w-3 shrink-0" aria-hidden />}
+                    {item === "Charts" && <BarChart3 className="h-3 w-3 shrink-0" aria-hidden />}
+                    {item === "Model Arena" && <Activity className="h-3 w-3 shrink-0" aria-hidden />}
+                    {item === "Compare" && <TrendingDown className="h-3 w-3 shrink-0" aria-hidden />}
                     {item}
                   </li>
                 ))}

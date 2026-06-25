@@ -171,13 +171,28 @@ class SqlResponse(BaseModel):
 
 
 # --- Report V2 ---
+class ReportScqa(BaseModel):
+    situation: str
+    complication: str
+    implication: str
+    answer: str
+
+
+class PrioritizedRecommendation(BaseModel):
+    action: str
+    priority: str
+
+
 class ReportV2Response(BaseModel):
     markdown: str
     executive_summary: str
+    scqa: ReportScqa | None = None
     key_findings: list[str]
     risks: list[str]
     opportunities: list[str]
     recommendations: list[str]
+    prioritized_recommendations: list[PrioritizedRecommendation] = Field(default_factory=list)
+    forecast_outlook: str = ""
     llm_enhanced: bool
     format: str = "markdown"
 

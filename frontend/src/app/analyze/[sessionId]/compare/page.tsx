@@ -1,11 +1,21 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useCallback, useEffect, useState } from "react";
+import { GitCompare } from "lucide-react";
 import { comparePeriod } from "@/lib/api";
 import type { PeriodCompareResponse } from "@/lib/types";
 import { Panel } from "@/components/product/Panel";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import {
+  DataTable,
+  DataTableBody,
+  DataTableCell,
+  DataTableHead,
+  DataTableRow,
+} from "@/components/ui/DataTable";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorAlert } from "@/components/ui/ErrorAlert";
 
 export default function ComparePage({
   params,
@@ -15,20 +25,40 @@ export default function ComparePage({
   const { sessionId } = use(params);
   const [period, setPeriod] = useState<"mom" | "qoq" | "yoy">("mom");
   const [result, setResult] = useState<PeriodCompareResponse | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const runPeriod = () => {
-    setLoading(true);
-    setError(null);
-    comparePeriod(sessionId, { period })
-      .then(setResult)
-      .catch((e) => setError(e instanceof Error ? e.message : "Failed"))
-      .finally(() => setLoading(false));
-  };
+  const runPeriod = useCallback(
+    (p: "mom" | "qoq" | "yoy" = period) => {
+      setLoading(true);
+      setError(null);
+      comparePeriod(sessionId, { period: p })
+        .then(setResult)
+        .catch((e) => setError(e instanceof Error ? e.message : "Failed"))
+        .finally(() => setLoading(false));
+    },
+    [sessionId, period]
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    comparePeriod(sessionId, { period: "mom" })
+      .then((data) => {
+        if (!cancelled) setResult(data);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId]);
 
   return (
-    <Panel wide title="Compare" description="Period-over-period performance analysis." loading={false}>
+    <Panel wide title="Compare" description="Period-over-period performance analysis." loading={loading && !result}>
       <div className="space-y-6">
         <Card>
           <CardHeader>
@@ -40,43 +70,51 @@ export default function ComparePage({
                 <Button
                   key={p}
                   variant={period === p ? "primary" : "secondary"}
-                  onClick={() => setPeriod(p)}
+                  onClick={() => {
+                    setPeriod(p);
+                    runPeriod(p);
+                  }}
                   className="uppercase"
                 >
                   {p}
                 </Button>
               ))}
-              <Button onClick={runPeriod} disabled={loading}>
-                {loading ? "Comparing…" : "Compare periods"}
+              <Button onClick={() => runPeriod()} disabled={loading}>
+                {loading ? "Comparing…" : "Refresh"}
               </Button>
             </div>
-            {error && <p className="text-sm text-danger">{error}</p>}
+            {error && <ErrorAlert message={error} />}
+            {!result && !loading && !error && (
+              <EmptyState
+                icon={GitCompare}
+                title="No comparison data"
+                description="This dataset may not have a usable date column for period comparison."
+              />
+            )}
             {result && (
               <div className="space-y-4">
                 <p className="text-sm leading-relaxed text-text-muted">{result.summary}</p>
                 {result.emerging_trends.map((t, i) => (
                   <p key={i} className="text-sm text-text-secondary">{t}</p>
                 ))}
-                <div className="overflow-hidden rounded-lg border border-border">
-                  <table className="w-full text-sm">
-                    <thead className="border-b border-border bg-bg-root text-left text-xs text-text-faint">
-                      <tr>
-                        <th className="px-4 py-3">Period</th>
-                        <th className="px-4 py-3">Change</th>
-                        <th className="px-4 py-3">Delta</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {result.changes.slice(-6).map((c, i) => (
-                        <tr key={i} className="border-b border-border last:border-0">
-                          <td className="px-4 py-3 text-text-muted">{c.period}</td>
-                          <td className="px-4 py-3 tabular-nums text-text-primary">{c.change_pct}%</td>
-                          <td className="px-4 py-3 tabular-nums text-text-primary">{c.delta.toLocaleString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <DataTable>
+                  <DataTableHead>
+                    <DataTableRow>
+                      <DataTableCell header>Period</DataTableCell>
+                      <DataTableCell header>Change</DataTableCell>
+                      <DataTableCell header>Delta</DataTableCell>
+                    </DataTableRow>
+                  </DataTableHead>
+                  <DataTableBody>
+                    {result.changes.slice(-6).map((c, i) => (
+                      <DataTableRow key={i}>
+                        <DataTableCell>{c.period}</DataTableCell>
+                        <DataTableCell>{c.change_pct}%</DataTableCell>
+                        <DataTableCell>{c.delta.toLocaleString()}</DataTableCell>
+                      </DataTableRow>
+                    ))}
+                  </DataTableBody>
+                </DataTable>
               </div>
             )}
           </CardContent>

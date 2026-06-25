@@ -9,12 +9,14 @@ import {
   FileSpreadsheet,
   GitBranch,
   LineChart,
+  Menu,
   MessageSquare,
   Search,
   Shield,
   Sparkles,
   TrendingUp,
   Upload,
+  X,
   Zap,
 } from "lucide-react";
 import { ProductPreview } from "@/components/landing/ProductPreview";
@@ -153,6 +155,7 @@ function FadeIn({
 export function LandingPage() {
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -185,15 +188,67 @@ export function LandingPage() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="rounded-md p-2 text-text-muted hover:bg-bg-hover md:hidden"
+              onClick={() => setMobileNavOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu className="size-5" />
+            </button>
             <Button href="/upload" variant="ghost" className="hidden sm:inline-flex text-sm">
-              Sign in
+              Get started
             </Button>
             <Button href="/upload" variant="primary" className="landing-cta gap-2 text-sm">
               <Upload className="h-3.5 w-3.5" aria-hidden />
-              Upload dataset
+              <span className="hidden xs:inline">Upload dataset</span>
+              <span className="sm:hidden">Upload</span>
             </Button>
           </div>
         </div>
+        {mobileNavOpen && (
+          <>
+            <button
+              type="button"
+              className="sidebar-backdrop md:hidden"
+              onClick={() => setMobileNavOpen(false)}
+              aria-label="Close menu"
+            />
+            <div className="fixed inset-y-0 right-0 z-50 w-72 border-l border-border bg-bg-panel p-4 md:hidden">
+              <div className="flex items-center justify-between">
+                <Logo size="sm" href="/" />
+                <button
+                  type="button"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="rounded-md p-2 text-text-muted hover:bg-bg-hover"
+                  aria-label="Close menu"
+                >
+                  <X className="size-5" />
+                </button>
+              </div>
+              <nav className="mt-6 flex flex-col gap-1" aria-label="Mobile">
+                {NAV.map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    onClick={() => setMobileNavOpen(false)}
+                    className="rounded-md px-3 py-2.5 text-sm text-text-secondary hover:bg-bg-hover"
+                    {...(item.href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <Link
+                  href="/upload?sample=1"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="mt-2 rounded-md px-3 py-2.5 text-sm font-medium text-accent-indigo"
+                >
+                  Try sample dataset
+                </Link>
+              </nav>
+            </div>
+          </>
+        )}
       </header>
 
       {/* Hero */}

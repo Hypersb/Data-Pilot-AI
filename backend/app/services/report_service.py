@@ -68,23 +68,53 @@ async def generate_full_report(
         i["description"] for i in insights
         if i["type"] in ("growth", "category_performance", "trend")
     ][:5]
-    recommendations = health.get("recommended_fixes", [])[:5]
-    recommendations.extend(story["what_to_do_next"].split(". ")[:2])
-    recommendations = [r.strip() for r in recommendations if r.strip()][:8]
+    raw_recommendations = health.get("recommended_fixes", [])[:5]
+    raw_recommendations.extend(story["what_to_do_next"].split(". ")[:2])
+    raw_recommendations = [r.strip() for r in raw_recommendations if r.strip()][:8]
 
-    executive_summary = (
-        f"Analysis of '{filename}' ({health['rows']} rows, {health['columns']} columns). "
-        f"Health score: {health['overall_score']}/100. "
-        f"{story['what_happened']}"
+    prioritized_recommendations = [
+        {
+            "action": rec,
+            "priority": "High" if i < 2 else "Medium" if i < 5 else "Low",
+        }
+        for i, rec in enumerate(raw_recommendations)
+    ]
+    recommendations = [f"[{p['priority']}] {p['action']}" for p in prioritized_recommendations]
+
+    situation = (
+        f"Analysis of '{filename}' ({health['rows']:,} rows, {health['columns']} columns). "
+        f"Data health score: {health['overall_score']}/100. {story['what_happened']}"
     )
+    complication = (
+        f"{story['why_it_happened']} "
+        + ("Key risks: " + "; ".join(risks[:3]) + "." if risks else "No critical risks flagged.")
+    )
+    implication = forecast_outlook if forecast_outlook != "Forecast not available for this dataset." else (
+        "Continued monitoring recommended based on current data quality and insight patterns."
+    )
+    scqa_answer = (
+        "Recommended actions: "
+        + "; ".join(recommendations[:3])
+        if recommendations
+        else "Maintain current data practices and review insights quarterly."
+    )
+
+    executive_summary = f"{situation} {scqa_answer}"
 
     result: dict[str, Any] = {
         "markdown": base["markdown"],
         "executive_summary": executive_summary,
+        "scqa": {
+            "situation": situation,
+            "complication": complication,
+            "implication": implication,
+            "answer": scqa_answer,
+        },
         "key_findings": key_findings,
         "risks": risks,
         "opportunities": opportunities,
         "recommendations": recommendations,
+        "prioritized_recommendations": prioritized_recommendations,
         "forecast_outlook": forecast_outlook,
         "llm_enhanced": base.get("llm_enhanced", False),
         "format": fmt,
@@ -104,6 +134,12 @@ async def generate_full_report(
             opportunities,
             recommendations,
             dashboard.get("kpis", []),
+            {
+                "situation": situation,
+                "complication": complication,
+                "implication": implication,
+                "answer": scqa_answer,
+            },
         )
     elif fmt == "pptx":
         result["file_bytes"] = _build_pptx(
@@ -133,6 +169,7 @@ def _build_pdf(
     opportunities: list[str],
     recommendations: list[str],
     kpis: list[dict[str, Any]],
+    scqa: dict[str, str] | None = None,
 ) -> bytes:
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.75 * inch, bottomMargin=0.75 * inch)
@@ -201,8 +238,22 @@ def _build_pdf(
     ]))
     story.append(summary_table)
     story.append(Spacer(1, 12))
-    story.append(Paragraph("<b>Executive Summary</b>", styles["Heading3"]))
-    story.append(Paragraph(summary, styles["Normal"]))
+    story.append(Paragraph("<b>Executive Brief (SCQA)</b>", styles["Heading3"]))
+    scqa_data = scqa or {
+        "situation": summary,
+        "complication": root_cause or "No major complications identified.",
+        "implication": forecast_outlook,
+        "answer": "; ".join(recommendations[:3]) if recommendations else "Review findings with stakeholders.",
+    }
+    for title, key in [
+        ("Situation", "situation"),
+        ("Complication", "complication"),
+        ("Implication", "implication"),
+        ("Recommendation", "answer"),
+    ]:
+        story.append(Paragraph(f"<b>{title}</b>", styles["Normal"]))
+        story.append(Paragraph(scqa_data.get(key, ""), styles["Normal"]))
+        story.append(Spacer(1, 6))
 
     if kpis:
         story.append(Spacer(1, 12))

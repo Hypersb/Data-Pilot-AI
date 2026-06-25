@@ -7,6 +7,8 @@ import type { RootCauseResponse } from "@/lib/types";
 import { Panel } from "@/components/product/Panel";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorAlert } from "@/components/ui/ErrorAlert";
 
 function buildDetectiveNarrative(result: RootCauseResponse): string {
   const pct = Math.abs(result.metric_change_pct);
@@ -81,7 +83,7 @@ export default function RootCausePage({
   return (
     <Panel
       wide
-      title="AI Data Detective"
+      title="Root Cause"
       description="Quantified root-cause analysis — why metrics changed, what drove it, and estimated impact."
       loading={false}
     >
@@ -106,7 +108,15 @@ export default function RootCausePage({
         </Button>
       </div>
 
-      {error && <p className="text-sm text-danger">{error}</p>}
+      {error && <ErrorAlert message={error} />}
+
+      {!result && !loading && !error && (
+        <EmptyState
+          icon={Search}
+          title="Run an investigation"
+          description="Select a metric and run the analysis to see which segments drove the change."
+        />
+      )}
 
       {result && narrative && (
         <div className="space-y-6">

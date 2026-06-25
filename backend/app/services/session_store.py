@@ -111,6 +111,49 @@ class SessionStore:
                 return True
             return False
 
+    def get_analysis_cache(self, session_id: str) -> dict[str, Any] | None:
+        self._cleanup_expired()
+        with self._lock:
+            entry = self._sessions.get(session_id)
+            if not entry:
+                return None
+            if datetime.now(UTC) > entry["expires_at"]:
+                del self._sessions[session_id]
+                return None
+            return entry.get("analysis_cache")
+
+    def set_analysis_cache(self, session_id: str, data: dict[str, Any]) -> bool:
+        self._cleanup_expired()
+        with self._lock:
+            entry = self._sessions.get(session_id)
+            if not entry:
+                return False
+            entry["analysis_cache"] = data
+            return True
+
+    def get_ml_cache(self, session_id: str, key: str) -> dict[str, Any] | None:
+        self._cleanup_expired()
+        with self._lock:
+            entry = self._sessions.get(session_id)
+            if not entry:
+                return None
+            if datetime.now(UTC) > entry["expires_at"]:
+                del self._sessions[session_id]
+                return None
+            caches = entry.get("ml_cache", {})
+            return caches.get(key)
+
+    def set_ml_cache(self, session_id: str, key: str, data: dict[str, Any]) -> bool:
+        self._cleanup_expired()
+        with self._lock:
+            entry = self._sessions.get(session_id)
+            if not entry:
+                return False
+            if "ml_cache" not in entry:
+                entry["ml_cache"] = {}
+            entry["ml_cache"][key] = data
+            return True
+
     def _cleanup_expired(self) -> None:
         now = datetime.now(UTC)
         with self._lock:

@@ -16,6 +16,7 @@
   <a href="https://github.com/Hypersb/Data-Pilot-AI">github.com/Hypersb/Data-Pilot-AI</a>
 </p>
 
+[![CI](https://github.com/Hypersb/Data-Pilot-AI/actions/workflows/ci.yml/badge.svg)](https://github.com/Hypersb/Data-Pilot-AI/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/badge/release-v3.0.0--rc.1-blue)](CHANGELOG.md)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -23,7 +24,8 @@
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.5%2B-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
 [![Tests](https://img.shields.io/badge/tests-97%20passing-0A9EDC?logo=pytest&logoColor=white)](backend/tests/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![CI](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?logo=githubactions&logoColor=white)](.github/workflows/ci.yml)
+
+> **Live demo:** Deploy the frontend to [Vercel](https://vercel.com) and API to [Render](https://render.com) — see [docs/DEPLOY.md](docs/DEPLOY.md). Set `NEXT_PUBLIC_API_URL` to your API URL.
 
 ---
 
@@ -59,6 +61,10 @@ Prisma AI is an **open-source AI data analyst platform**. Upload CSV or Excel an
 <p align="center">
   <img src="docs/assets/report.png" alt="Executive report" width="720" />
 </p>
+
+### Product demo
+
+Upload → Overview → Ask Prisma → Executive Report in under 60 seconds with a sample dataset. See [docs/v3-demo-script.md](docs/v3-demo-script.md) for a timed walkthrough.
 
 ---
 

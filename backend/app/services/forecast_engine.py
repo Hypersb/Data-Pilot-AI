@@ -519,6 +519,14 @@ def _build_executive_summary(
         f"{vol_note} Model: {best['model_name']} (MAPE {best['metrics'].get('mape', 0):.1f}%)."
     )
 
+    plain_english = (
+        f"If the current {current_trend} trend continues, "
+        f"{target_column.replace('_', ' ')} is expected to {direction} by roughly "
+        f"{abs(projected_change):.1f}% over the forecast horizon. "
+        f"The likely range spans {worst_case:,.0f} to {best_case:,.0f} "
+        f"({confidence} confidence based on historical volatility)."
+    )
+
     return {
         "current_trend": current_trend,
         "trend_pct": round(trend_pct, 2),
@@ -528,6 +536,7 @@ def _build_executive_summary(
         "best_case": round(float(best_case), 2),
         "worst_case": round(float(worst_case), 2),
         "ai_commentary": commentary,
+        "plain_english": plain_english,
     }
 
 

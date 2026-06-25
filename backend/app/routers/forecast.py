@@ -4,6 +4,7 @@ from app.routers.profile import _get_df
 from app.schemas.responses import ForecastLeaderboardResponse, ForecastRequest, ForecastResponse
 from app.services.forecast_engine import run_forecast, run_forecast_leaderboard
 from app.services.experiment_tracker_service import experiment_tracker
+from app.services.session_store import session_store
 
 router = APIRouter(prefix="/api/sessions", tags=["forecast"])
 
@@ -15,6 +16,11 @@ async def get_forecast_leaderboard(
     date_column: str | None = Query(default=None),
     forecast_horizon: int = Query(default=6, ge=1, le=24),
 ) -> ForecastLeaderboardResponse:
+    cache_key = f"forecast:{target_column}:{date_column}:{forecast_horizon}"
+    cached = session_store.get_ml_cache(session_id, cache_key)
+    if cached is not None:
+        return ForecastLeaderboardResponse(**cached)
+
     df = _get_df(session_id)
     try:
         result = run_forecast_leaderboard(
@@ -33,6 +39,7 @@ async def get_forecast_leaderboard(
             metrics=result["best_model"].get("metrics", {}),
             notes="Forecast leaderboard run",
         )
+    session_store.set_ml_cache(session_id, cache_key, result)
     return ForecastLeaderboardResponse(**result)
 
 

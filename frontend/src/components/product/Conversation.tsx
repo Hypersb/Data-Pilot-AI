@@ -2,19 +2,21 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { sendChat } from "@/lib/api";
+import { isSessionExpiredError, sendChat } from "@/lib/api";
 import type { ChatMessage } from "@/lib/types";
 import { Composer } from "@/components/product/Composer";
 import { EvidenceBlock } from "@/components/product/EvidenceBlock";
+import { SessionExpired } from "@/components/product/SessionExpired";
+import { ErrorAlert } from "@/components/ui/ErrorAlert";
 
 const suggestions = [
-  "Summarize this dataset and highlight the top 3 business insights",
-  "What trends stand out?",
-  "Which category performs best?",
+  "What are the top 3 business insights from this data?",
+  "What trends should leadership know about?",
+  "Which segment drives the most value?",
 ];
 
 const BOOTSTRAP_Q =
-  "Summarize this dataset and highlight the top 3 business insights";
+  "What are the top 3 business insights from this data, and what should leadership do next?";
 
 function ConversationInner({ sessionId }: { sessionId: string }) {
   const searchParams = useSearchParams();
@@ -24,16 +26,23 @@ function ConversationInner({ sessionId }: { sessionId: string }) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [followUps, setFollowUps] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   async function submit(question: string) {
     if (!question.trim() || loading) return;
     setError(null);
-    setMessages((prev) => [...prev, { role: "user", content: question }]);
+    setFollowUps([]);
+    const userMsg: ChatMessage = { role: "user", content: question };
+    setMessages((prev) => [...prev, userMsg]);
     setLoading(true);
     try {
-      const result = await sendChat(sessionId, question);
+      const history = [...messages, userMsg]
+        .slice(-8)
+        .map((m) => ({ role: m.role, content: m.content }));
+      const result = await sendChat(sessionId, question, history);
       setMessages((prev) => [
         ...prev,
         {
@@ -45,8 +54,13 @@ function ConversationInner({ sessionId }: { sessionId: string }) {
           chart_data: result.chart_data,
         },
       ]);
+      setFollowUps(result.follow_up_questions?.slice(0, 3) ?? []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
+      if (isSessionExpiredError(e)) {
+        setSessionExpired(true);
+      } else {
+        setError(e instanceof Error ? e.message : "Something went wrong");
+      }
     } finally {
       setLoading(false);
     }
@@ -64,7 +78,11 @@ function ConversationInner({ sessionId }: { sessionId: string }) {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+  }, [messages, loading, followUps]);
+
+  if (sessionExpired) {
+    return <SessionExpired />;
+  }
 
   const empty = messages.length === 0 && !loading;
 
@@ -76,7 +94,7 @@ function ConversationInner({ sessionId }: { sessionId: string }) {
             <div className="py-8">
               <h2 className="type-title text-text-primary">Ask Prisma</h2>
               <p className="type-caption mt-2">
-                Your AI data analyst — ask questions in plain English and get cited answers.
+                Your AI business analyst — ask in plain English and get cited, grounded answers.
               </p>
               <div className="mt-8 flex flex-wrap gap-2">
                 {suggestions.map((q) => (
@@ -117,10 +135,15 @@ function ConversationInner({ sessionId }: { sessionId: string }) {
                         </span>
                       )}
                     </div>
-                    <p className="type-body text-text-secondary whitespace-pre-wrap">
+                    <p className="type-body whitespace-pre-wrap text-text-secondary">
                       {msg.content}
                     </p>
-                    <EvidenceBlock citations={msg.citations} chartData={msg.chart_data} />
+                    <EvidenceBlock
+                      citations={msg.citations}
+                      chartData={msg.chart_data}
+                      toolUsed={msg.tool_used}
+                      confidence={msg.confidence}
+                    />
                   </div>
                 )}
               </article>
@@ -141,10 +164,24 @@ function ConversationInner({ sessionId }: { sessionId: string }) {
               </div>
             )}
 
-            {error && (
-              <p className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                {error}
-              </p>
+            {error && <ErrorAlert message={error} />}
+
+            {followUps.length > 0 && !loading && (
+              <div className="pt-2">
+                <p className="type-label mb-3">Suggested follow-ups</p>
+                <div className="flex flex-wrap gap-2">
+                  {followUps.map((q) => (
+                    <button
+                      key={q}
+                      type="button"
+                      onClick={() => submit(q)}
+                      className="rounded-full border border-border bg-bg-panel px-3 py-2 text-sm text-text-secondary transition-colors hover:border-border-focus hover:bg-bg-hover hover:text-text-primary"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
             <div ref={bottomRef} />
           </div>

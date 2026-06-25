@@ -126,6 +126,7 @@ export interface ForecastExecutiveSummary {
   best_case: number;
   worst_case: number;
   ai_commentary: string;
+  plain_english?: string;
 }
 
 export interface ForecastLeaderboardResponse {
@@ -353,13 +354,28 @@ export interface SqlResponse {
   assumptions: string[];
 }
 
+export interface ReportScqa {
+  situation: string;
+  complication: string;
+  implication: string;
+  answer: string;
+}
+
+export interface PrioritizedRecommendation {
+  action: string;
+  priority: string;
+}
+
 export interface ReportV2Response {
   markdown: string;
   executive_summary: string;
+  scqa?: ReportScqa;
   key_findings: string[];
   risks: string[];
   opportunities: string[];
   recommendations: string[];
+  prioritized_recommendations?: PrioritizedRecommendation[];
+  forecast_outlook?: string;
   llm_enhanced: boolean;
   format: string;
 }

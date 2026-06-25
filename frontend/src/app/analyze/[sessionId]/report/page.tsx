@@ -5,8 +5,10 @@ import { Download } from "lucide-react";
 import { getReportV2 } from "@/lib/api";
 import type { ReportV2Response } from "@/lib/types";
 import { Panel } from "@/components/product/Panel";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { ErrorAlert } from "@/components/ui/ErrorAlert";
 
 export default function ReportPage({
   params,
@@ -47,14 +49,10 @@ export default function ReportPage({
     <Panel
       wide
       title="Executive Report"
-      description="Consulting-grade deliverable — cover page, findings, forecasts, models, and recommendations."
+      description="Board-ready brief with situation, risks, forecast outlook, and prioritized actions."
       loading={loading}
     >
-      {error && (
-        <p className="mb-4 rounded-md border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-danger">
-          {error}
-        </p>
-      )}
+      {error && <ErrorAlert message={error} className="mb-4" />}
       {report && (
         <div className="space-y-6">
           <div className="flex flex-wrap gap-3">
@@ -67,19 +65,41 @@ export default function ReportPage({
               {downloading === "pptx" ? "Generating…" : "Download PowerPoint"}
             </Button>
           </div>
-          <Card className="border-brand/20">
+
+          {report.scqa && (
+            <Card className="border-brand/20">
+              <CardHeader>
+                <CardTitle>Executive Brief</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {[
+                  { label: "Situation", text: report.scqa.situation },
+                  { label: "Complication", text: report.scqa.complication },
+                  { label: "Implication", text: report.scqa.implication },
+                  { label: "Recommendation", text: report.scqa.answer },
+                ].map((block) => (
+                  <div key={block.label}>
+                    <p className="type-label">{block.label}</p>
+                    <p className="mt-1 text-sm leading-relaxed text-text-secondary">{block.text}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          <Card>
             <CardHeader>
-              <CardTitle>Executive Summary</CardTitle>
+              <CardTitle>Summary</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm leading-relaxed text-text-secondary">{report.executive_summary}</p>
             </CardContent>
           </Card>
+
           {[
             { title: "Key Findings", items: report.key_findings },
             { title: "Risks", items: report.risks },
             { title: "Opportunities", items: report.opportunities },
-            { title: "Recommendations", items: report.recommendations },
           ].map((s) => (
             <Card key={s.title}>
               <CardHeader>
@@ -87,13 +107,42 @@ export default function ReportPage({
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">
-                  {(s.items.length ? s.items : ["None identified."]).map((item, i) => (
+                  {(s.items.length ? s.items : ["No material items identified for this dataset."]).map((item, i) => (
                     <li key={i} className="text-sm text-text-muted">• {item}</li>
                   ))}
                 </ul>
               </CardContent>
             </Card>
           ))}
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Recommended Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                {(report.prioritized_recommendations?.length
+                  ? report.prioritized_recommendations
+                  : report.recommendations.map((action) => ({ action, priority: "Medium" }))
+                ).map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm text-text-muted">
+                    <Badge
+                      variant={
+                        item.priority === "High"
+                          ? "danger"
+                          : item.priority === "Low"
+                            ? "outline"
+                            : "warning"
+                      }
+                    >
+                      {item.priority}
+                    </Badge>
+                    <span>{item.action}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
         </div>
       )}
     </Panel>

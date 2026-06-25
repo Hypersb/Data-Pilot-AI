@@ -13,8 +13,8 @@ export function ChartEmbed({ figure }: { figure: Record<string, unknown> }) {
         data={figure.data as object[]}
         layout={{
           ...(figure.layout as object),
-          paper_bgcolor: "#0a0f1a",
-          plot_bgcolor: "#0f1623",
+          paper_bgcolor: "#09090b",
+          plot_bgcolor: "#0c0c0e",
           font: { color: "#a1a1aa", size: 11 },
           margin: { l: 44, r: 16, t: 28, b: 36 },
         }}
