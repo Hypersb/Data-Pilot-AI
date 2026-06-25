@@ -16,5 +16,5 @@ prophet>=1.1.0
 shap>=0.44.0
 reportlab>=4.2.0
 python-pptx>=1.0.0
-sqlparse>=0.5.0
+sqlparse>=0.5.5
 markdown>=3.7
