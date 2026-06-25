@@ -11,7 +11,15 @@ from app.services.profiler import profile_dataframe
 def build_analysis_bundle(df: pd.DataFrame) -> dict[str, Any]:
     profile = profile_dataframe(df)
     insights = generate_insights(df)
-    dashboard = generate_dashboard(df)
+    try:
+        dashboard = generate_dashboard(df)
+    except Exception as exc:
+        dashboard = {
+            "kpis": [],
+            "panels": [],
+            "quality_alerts": [f"Dashboard unavailable: {exc}"],
+            "chart_data": {},
+        }
 
     forecast: dict[str, Any] | None = None
     forecast_available = False

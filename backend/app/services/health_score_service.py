@@ -5,6 +5,7 @@ import pandas as pd
 
 from app.services.ingest import infer_column_types
 from app.services.profiler import profile_dataframe
+from app.utils.datetime_utils import has_future_dates, parse_datetime_series
 from app.utils.outlier_utils import aggregate_outlier_rate, iqr_outlier_rate
 from app.utils.scoring import score_from_ratio, weighted_score
 
@@ -12,7 +13,11 @@ from app.utils.scoring import score_from_ratio, weighted_score
 def compute_health_score(df: pd.DataFrame) -> dict[str, Any]:
     profile = profile_dataframe(df)
     column_types = infer_column_types(df)
-    numeric_cols = [c for c, t in column_types.items() if t == "numeric"]
+    numeric_cols = [
+        c
+        for c, t in column_types.items()
+        if t == "numeric" and not pd.api.types.is_bool_dtype(df[c])
+    ]
     total_rows = len(df)
     total_cols = len(df.columns)
     total_cells = total_rows * total_cols if total_cols else 0
@@ -102,18 +107,15 @@ def _validity_checks(df: pd.DataFrame, column_types: dict[str, str]) -> list[dic
                     }
                 )
     for col, col_type in column_types.items():
-        if col_type == "datetime":
-            parsed = pd.to_datetime(df[col], errors="coerce")
-            future = parsed > pd.Timestamp.now()
-            if future.any():
-                issues.append(
-                    {
-                        "severity": "medium",
-                        "column": col,
-                        "description": f"Future dates detected in '{col}'.",
-                        "recommended_fix": "filter_rows",
-                    }
-                )
+        if col_type == "datetime" and has_future_dates(df[col]):
+            issues.append(
+                {
+                    "severity": "medium",
+                    "column": col,
+                    "description": f"Future dates detected in '{col}'.",
+                    "recommended_fix": "filter_rows",
+                }
+            )
     return issues
 
 
@@ -171,7 +173,7 @@ def _build_issues(
 
     for col, col_type in column_types.items():
         if col_type == "datetime":
-            parsed = pd.to_datetime(df[col], errors="coerce")
+            parsed = parse_datetime_series(df[col])
             fail_rate = parsed.isna().sum() / max(len(df), 1) * 100
             if fail_rate > 10:
                 issues.append(

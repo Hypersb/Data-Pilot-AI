@@ -40,10 +40,22 @@ def dataframe_preview(df: pd.DataFrame, rows: int = 5) -> list[dict[str, Any]]:
     return preview.to_dict(orient="records")
 
 
+_ID_LIKE_COLUMNS = {"#", "id", "index", "row", "row_id", "uuid", "pk", "key"}
+
+
 def infer_column_types(df: pd.DataFrame) -> dict[str, str]:
     result: dict[str, str] = {}
     for col in df.columns:
         series = df[col]
+        col_key = str(col).strip().lower()
+        if col_key in _ID_LIKE_COLUMNS:
+            coerced = pd.to_numeric(series, errors="coerce")
+            if coerced.notna().sum() >= max(1, len(series) * 0.8):
+                result[col] = "numeric"
+                continue
+        if pd.api.types.is_bool_dtype(series):
+            result[col] = "categorical"
+            continue
         if pd.api.types.is_numeric_dtype(series):
             result[col] = "numeric"
         elif pd.api.types.is_datetime64_any_dtype(series):

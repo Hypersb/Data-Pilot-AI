@@ -21,6 +21,8 @@ def generate_dashboard(df: pd.DataFrame) -> dict[str, Any]:
             continue
         agg = "sum" if any(k in col.lower() for k in ("revenue", "sales", "amount", "total")) else "mean"
         value = float(series.sum()) if agg == "sum" else float(series.mean())
+        if value != value:  # NaN
+            continue
         kpis.append(
             {
                 "label": col.replace("_", " ").title(),

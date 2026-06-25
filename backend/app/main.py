@@ -1,7 +1,15 @@
-from fastapi import FastAPI
+import logging
+
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.config import settings
+
+logger = logging.getLogger("uvicorn.error")
+
 from app.routers import (
     analysis,
     anomalies,
@@ -10,15 +18,18 @@ from app.routers import (
     cleaning,
     comparison,
     dashboard,
+    experiment_lab,
     experiments,
     forecast,
     health,
     insights,
+    model_arena,
     profile,
     query,
     report,
     report_v2,
     root_cause,
+    samples,
     sql,
     storytelling,
     team,
@@ -41,6 +52,54 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+def _cors_headers(origin: str | None) -> dict[str, str]:
+    if origin and origin in settings.cors_origin_list:
+        return {
+            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Allow-Credentials": "true",
+        }
+    return {}
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+        headers=_cors_headers(request.headers.get("origin")),
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def request_validation_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()},
+        headers=_cors_headers(request.headers.get("origin")),
+    )
+
+
+@app.exception_handler(ResponseValidationError)
+async def response_validation_handler(request: Request, exc: ResponseValidationError):
+    logger.exception("Response validation failed for %s", request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Response validation failed"},
+        headers=_cors_headers(request.headers.get("origin")),
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    logger.exception("Unhandled error for %s", request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error"},
+        headers=_cors_headers(request.headers.get("origin")),
+    )
+
+
 app.include_router(upload.router)
 app.include_router(analysis.router)
 app.include_router(profile.router)
@@ -62,6 +121,9 @@ app.include_router(cleaning.router)
 app.include_router(sql.router)
 app.include_router(dashboard.router)
 app.include_router(experiments.router)
+app.include_router(experiment_lab.router)
+app.include_router(model_arena.router)
+app.include_router(samples.router)
 app.include_router(team.router)
 
 

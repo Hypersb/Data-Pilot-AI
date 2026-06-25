@@ -13,8 +13,8 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 from app.services.ingest import infer_column_types
 
 MIN_POINTS = 8
-DEFAULT_HORIZON = 6
-MAX_HORIZON = 24
+DEFAULT_HORIZON = 30
+MAX_HORIZON = 30
 LAG_FEATURES = 3
 
 
@@ -65,6 +65,9 @@ def run_forecast_leaderboard(
     )
 
     explanation = _build_explanation(best, leaderboard)
+    executive = _build_executive_summary(
+        series_df, date_column, target_column, y, forecast_block["forecast"], best
+    )
     chart_data = _build_chart(forecast_block["historical"], forecast_block["forecast"], target_column)
 
     return {
@@ -75,6 +78,7 @@ def run_forecast_leaderboard(
         "leaderboard": leaderboard,
         "best_model": best,
         "explanation": explanation,
+        "executive_summary": executive,
         "historical": forecast_block["historical"],
         "forecast": forecast_block["forecast"],
         "chart_data": chart_data,
@@ -445,6 +449,86 @@ def _forecast_payload(
         for d, v, lo, hi in zip(future_dates, forecast_vals, lower, upper)
     ]
     return {"historical": historical, "forecast": forecast}
+
+
+def _build_executive_summary(
+    series_df: pd.DataFrame,
+    date_column: str,
+    target_column: str,
+    y: np.ndarray,
+    forecast: list[dict[str, Any]],
+    best: dict[str, Any],
+) -> dict[str, Any]:
+    recent_n = min(6, len(y))
+    recent = y[-recent_n:]
+    prior = y[-(recent_n * 2) : -recent_n] if len(y) >= recent_n * 2 else y[:recent_n]
+
+    recent_mean = float(np.mean(recent))
+    prior_mean = float(np.mean(prior)) if len(prior) else recent_mean
+    trend_pct = ((recent_mean - prior_mean) / prior_mean * 100) if prior_mean else 0.0
+
+    if trend_pct > 3:
+        current_trend = "increasing"
+    elif trend_pct < -3:
+        current_trend = "decreasing"
+    else:
+        current_trend = "stable"
+
+    last_val = float(y[-1])
+    end_forecast = float(forecast[-1]["value"]) if forecast else last_val
+    projected_change = ((end_forecast - last_val) / last_val * 100) if last_val else 0.0
+
+    widths = []
+    for point in forecast:
+        lo, hi = point.get("lower"), point.get("upper")
+        if lo is not None and hi is not None and point["value"]:
+            widths.append((hi - lo) / abs(point["value"]))
+    avg_width = float(np.mean(widths)) if widths else 0.5
+    if avg_width < 0.15:
+        confidence = "high"
+    elif avg_width < 0.35:
+        confidence = "moderate"
+    else:
+        confidence = "low"
+
+    best_case = max(p.get("upper", p["value"]) for p in forecast) if forecast else end_forecast
+    worst_case = min(p.get("lower", p["value"]) for p in forecast) if forecast else end_forecast
+
+    volatility = float(np.std(y[-min(12, len(y)) :]) / (np.mean(y[-min(12, len(y)) :]) + 1e-9))
+    vol_note = (
+        "Confidence is moderate due to recent volatility."
+        if volatility > 0.2
+        else "Confidence is supported by a relatively stable recent trend."
+    )
+
+    period_label = f"{len(forecast)}-period forecast"
+    direction = "increase" if projected_change >= 0 else "decrease"
+    growth_week = ""
+    if len(forecast) >= 4:
+        mid = len(forecast) // 2
+        first_half = np.mean([p["value"] for p in forecast[:mid]])
+        second_half = np.mean([p["value"] for p in forecast[mid:]])
+        if second_half > first_half * 1.03:
+            growth_week = " The strongest growth period is expected in the latter half of the horizon."
+        elif second_half < first_half * 0.97:
+            growth_week = " Growth may taper in the latter half of the horizon."
+
+    commentary = (
+        f"{target_column.replace('_', ' ').title()} is projected to {direction} by "
+        f"{abs(projected_change):.1f}% over the forecast horizon.{growth_week} "
+        f"{vol_note} Model: {best['model_name']} (MAPE {best['metrics'].get('mape', 0):.1f}%)."
+    )
+
+    return {
+        "current_trend": current_trend,
+        "trend_pct": round(trend_pct, 2),
+        "forecast_period_label": period_label,
+        "projected_change_pct": round(projected_change, 2),
+        "confidence_level": confidence,
+        "best_case": round(float(best_case), 2),
+        "worst_case": round(float(worst_case), 2),
+        "ai_commentary": commentary,
+    }
 
 
 def _build_explanation(best: dict[str, Any], leaderboard: list[dict[str, Any]]) -> str:

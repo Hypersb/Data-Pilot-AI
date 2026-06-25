@@ -207,6 +207,52 @@ class ExperimentLogRequest(BaseModel):
     notes: str = ""
 
 
+class FeatureSetResult(BaseModel):
+    label: str
+    name: str
+    features: list[str]
+    feature_count: int
+    model_name: str
+    metrics: dict[str, float]
+    score: float
+    rank: int | None = None
+    is_best: bool = False
+
+
+class ExperimentLabResponse(BaseModel):
+    task_type: str
+    target_column: str
+    feature_sets: list[FeatureSetResult]
+    best_feature_set: str
+    summary: str
+
+
+# --- Sample Datasets ---
+class SampleDatasetItem(BaseModel):
+    id: str
+    name: str
+    description: str
+    filename: str
+    task_hint: str
+    rows: int
+    columns: int
+
+
+class SamplesListResponse(BaseModel):
+    samples: list[SampleDatasetItem]
+    count: int
+
+
+class SampleLoadResponse(BaseModel):
+    session_id: str
+    filename: str
+    name: str
+    rows: int
+    columns: list[str]
+    preview: list[dict[str, Any]]
+    column_types: dict[str, str]
+
+
 # --- Multi-Agent ---
 class AgentFinding(BaseModel):
     role: str

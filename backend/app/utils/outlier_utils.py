@@ -5,7 +5,9 @@ import pandas as pd
 
 
 def iqr_outlier_rate(series: pd.Series) -> float:
-    clean = pd.to_numeric(series, errors="coerce").dropna()
+    if pd.api.types.is_bool_dtype(series):
+        return 0.0
+    clean = pd.to_numeric(series, errors="coerce").astype(float).dropna()
     if len(clean) < 10:
         return 0.0
     q1, q3 = clean.quantile(0.25), clean.quantile(0.75)

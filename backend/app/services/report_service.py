@@ -3,10 +3,11 @@ from pathlib import Path
 from typing import Any, Literal
 
 import pandas as pd
+from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
-from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer
+from reportlab.platypus import Image, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 from pptx import Presentation
 from pptx.util import Pt
 
@@ -35,15 +36,27 @@ async def generate_full_report(
     dashboard = generate_dashboard(df)
 
     forecast_outlook = "Forecast not available for this dataset."
+    forecast_data: dict[str, Any] | None = None
     try:
-        fc = run_forecast_leaderboard(df, forecast_horizon=6)
+        fc = run_forecast_leaderboard(df, forecast_horizon=30)
         if fc.get("available") and fc.get("forecast"):
-            next_val = fc["forecast"][0]["value"]
+            forecast_data = fc
+            exec_sum = fc.get("executive_summary", {})
+            next_val = fc["forecast"][-1]["value"]
             forecast_outlook = (
                 f"Best model: {fc['best_model']['model_name']}. "
-                f"Next period forecast for {fc['target_column']}: {next_val:,.2f}. "
-                f"{fc.get('explanation', '')}"
+                f"End-of-horizon forecast for {fc['target_column']}: {next_val:,.2f}. "
+                f"{exec_sum.get('ai_commentary', fc.get('explanation', ''))}"
             )
+    except ValueError:
+        pass
+
+    model_results = "Model Arena results not available for this dataset."
+    try:
+        from app.services.model_arena_service import run_model_arena
+
+        arena = run_model_arena(df)
+        model_results = arena.get("performance_summary", "")
     except ValueError:
         pass
 
@@ -79,9 +92,14 @@ async def generate_full_report(
 
     if fmt == "pdf":
         result["file_bytes"] = _build_pdf(
+            filename,
             executive_summary,
+            health,
             key_findings,
+            story.get("why_it_happened", ""),
             forecast_outlook,
+            forecast_data,
+            model_results,
             risks,
             opportunities,
             recommendations,
@@ -103,32 +121,92 @@ def _logo_path() -> Path | None:
 
 
 def _build_pdf(
+    filename: str,
     summary: str,
+    health: dict[str, Any],
     findings: list[str],
+    root_cause: str,
     forecast_outlook: str,
+    forecast_data: dict[str, Any] | None,
+    model_results: str,
     risks: list[str],
     opportunities: list[str],
     recommendations: list[str],
     kpis: list[dict[str, Any]],
 ) -> bytes:
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.75 * inch, bottomMargin=0.75 * inch)
     styles = getSampleStyleSheet()
+    cover_title = ParagraphStyle(
+        "CoverTitle",
+        parent=styles["Title"],
+        fontSize=28,
+        spaceAfter=12,
+        textColor=colors.HexColor("#18181b"),
+    )
+    cover_sub = ParagraphStyle(
+        "CoverSub",
+        parent=styles["Normal"],
+        fontSize=12,
+        textColor=colors.HexColor("#71717a"),
+        spaceAfter=6,
+    )
+    section = ParagraphStyle(
+        "Section",
+        parent=styles["Heading2"],
+        fontSize=14,
+        spaceBefore=16,
+        spaceAfter=8,
+        textColor=colors.HexColor("#27272a"),
+    )
     story: list[Any] = []
 
     logo = _logo_path()
     if logo:
-        story.append(Image(str(logo), width=1.2 * inch, height=1.2 * inch))
-        story.append(Spacer(1, 8))
+        story.append(Image(str(logo), width=1.0 * inch, height=1.0 * inch))
+        story.append(Spacer(1, 24))
 
-    story.append(Paragraph("Prisma AI — Business Report", styles["Title"]))
+    story.append(Paragraph("Prisma AI", cover_sub))
+    story.append(Paragraph("Executive Analytics Report", cover_title))
+    story.append(Spacer(1, 8))
+    story.append(Paragraph(f"<b>Dataset:</b> {filename}", cover_sub))
+    story.append(Paragraph(
+        f"<b>Scope:</b> {health['rows']:,} rows · {health['columns']} columns · "
+        f"Health score {health['overall_score']}/100",
+        cover_sub,
+    ))
+    story.append(Spacer(1, 36))
+    story.append(Paragraph("<i>Confidential — Prepared by Prisma AI Analytics Platform</i>", cover_sub))
+    story.append(PageBreak())
+
+    story.append(Paragraph("Dataset Summary", section))
+    summary_table = Table(
+        [
+            ["Metric", "Value"],
+            ["Rows", f"{health['rows']:,}"],
+            ["Columns", str(health["columns"])],
+            ["Health Score", f"{health['overall_score']}/100"],
+            ["Completeness", f"{health['sub_scores']['completeness']:.0f}"],
+        ],
+        colWidths=[2.5 * inch, 3.5 * inch],
+    )
+    summary_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f4f4f5")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#52525b")),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ("TOPPADDING", (0, 0), (-1, -1), 8),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#e4e4e7")),
+    ]))
+    story.append(summary_table)
     story.append(Spacer(1, 12))
-    story.append(Paragraph("<b>Executive Summary</b>", styles["Heading2"]))
+    story.append(Paragraph("<b>Executive Summary</b>", styles["Heading3"]))
     story.append(Paragraph(summary, styles["Normal"]))
-    story.append(Spacer(1, 12))
 
     if kpis:
-        story.append(Paragraph("<b>Key Metrics</b>", styles["Heading2"]))
+        story.append(Spacer(1, 12))
+        story.append(Paragraph("<b>Key Metrics</b>", styles["Heading3"]))
         for k in kpis[:4]:
             story.append(
                 Paragraph(
@@ -136,20 +214,42 @@ def _build_pdf(
                     styles["Normal"],
                 )
             )
-        story.append(Spacer(1, 8))
 
     sections = [
         ("Key Findings", findings),
-        ("Forecast Outlook", [forecast_outlook]),
+        ("Root Cause Analysis", [root_cause] if root_cause else []),
+        ("Forecasts", [forecast_outlook]),
+        ("Model Results", [model_results]),
         ("Risks", risks),
         ("Opportunities", opportunities),
         ("Recommendations", recommendations),
     ]
     for title, items in sections:
-        story.append(Paragraph(f"<b>{title}</b>", styles["Heading2"]))
-        for item in items or ["None identified."]:
+        story.append(Paragraph(title, section))
+        for item in items or ["None identified for this dataset."]:
             story.append(Paragraph(f"• {item}", styles["Normal"]))
-        story.append(Spacer(1, 8))
+        story.append(Spacer(1, 4))
+
+    if forecast_data and forecast_data.get("executive_summary"):
+        es = forecast_data["executive_summary"]
+        story.append(Paragraph("Forecast Detail", section))
+        forecast_rows = [
+            ["Indicator", "Value"],
+            ["Current Trend", f"{es.get('current_trend', '—')} ({es.get('trend_pct', 0):+.1f}%)"],
+            ["Projected Change", f"{es.get('projected_change_pct', 0):+.1f}%"],
+            ["Confidence", es.get("confidence_level", "—")],
+            ["Best Case", f"{es.get('best_case', 0):,.2f}"],
+            ["Worst Case", f"{es.get('worst_case', 0):,.2f}"],
+        ]
+        ft = Table(forecast_rows, colWidths=[2.5 * inch, 3.5 * inch])
+        ft.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f4f4f5")),
+            ("FONTSIZE", (0, 0), (-1, -1), 10),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#e4e4e7")),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ]))
+        story.append(ft)
 
     doc.build(story)
     return buffer.getvalue()

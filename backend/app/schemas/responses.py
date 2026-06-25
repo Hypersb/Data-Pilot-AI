@@ -80,6 +80,17 @@ class ForecastLeaderboardEntry(BaseModel):
     status: str = "success"
 
 
+class ForecastExecutiveSummary(BaseModel):
+    current_trend: str
+    trend_pct: float
+    forecast_period_label: str
+    projected_change_pct: float
+    confidence_level: str
+    best_case: float
+    worst_case: float
+    ai_commentary: str
+
+
 class ForecastLeaderboardResponse(BaseModel):
     available: bool = True
     target_column: str
@@ -91,6 +102,7 @@ class ForecastLeaderboardResponse(BaseModel):
     historical: list[dict[str, Any]]
     forecast: list[ForecastPoint]
     chart_data: dict[str, Any]
+    executive_summary: ForecastExecutiveSummary | None = None
 
 
 class QueryRequest(BaseModel):
@@ -130,12 +142,18 @@ class AutoMLModelEntry(BaseModel):
     is_best: bool = False
     status: str = "success"
     error: str | None = None
+    training_time_ms: float | None = None
+    prediction_time_ms: float | None = None
+    score: float | None = None
+    description: str | None = None
 
 
 class AutoMLBestModel(BaseModel):
     model_name: str
     metrics: dict[str, float]
     rank: int
+    description: str | None = None
+    why_it_won: str | None = None
 
 
 class AutoMLResponse(BaseModel):
@@ -146,6 +164,19 @@ class AutoMLResponse(BaseModel):
     detection_reason: str
     leaderboard: list[AutoMLModelEntry]
     best_model: AutoMLBestModel
+    models_trained: int
+
+
+class ModelArenaResponse(BaseModel):
+    task_type: str
+    target_column: str
+    feature_columns: list[str]
+    detection_reason: str
+    primary_metric: str
+    leaderboard: list[AutoMLModelEntry]
+    best_model: AutoMLBestModel
+    model_explanation: str
+    performance_summary: str
     models_trained: int
 
 
@@ -190,6 +221,10 @@ class AnomalyRowItem(BaseModel):
     columns: list[str]
     explanation: str
     values: dict[str, Any]
+    title: str | None = None
+    date: str | None = None
+    impact_pct: float | None = None
+    possible_causes: list[str] = Field(default_factory=list)
 
 
 class TopAnomalousColumn(BaseModel):

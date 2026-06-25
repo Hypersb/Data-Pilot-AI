@@ -4,7 +4,22 @@ import pandas as pd
 
 
 def parse_datetime_column(df: pd.DataFrame, col: str) -> pd.Series:
-    return pd.to_datetime(df[col], errors="coerce")
+    return parse_datetime_series(df[col])
+
+
+def parse_datetime_series(series: pd.Series) -> pd.Series:
+    """Parse datetimes and normalize to naive timestamps for safe comparisons."""
+    parsed = pd.to_datetime(series, errors="coerce", utc=False)
+    if getattr(parsed.dt, "tz", None) is not None:
+        parsed = parsed.dt.tz_convert(None)
+    return parsed
+
+
+def has_future_dates(series: pd.Series) -> bool:
+    parsed = parse_datetime_series(series)
+    if parsed.notna().sum() == 0:
+        return False
+    return bool((parsed > pd.Timestamp.now()).any())
 
 
 def resample_period(

@@ -245,6 +245,9 @@ def _merge_flags(row_hits: dict[int, dict[str, Any]], flags: list[dict[str, Any]
 
 
 def _build_anomaly_rows(df: pd.DataFrame, row_hits: dict[int, dict[str, Any]]) -> list[dict[str, Any]]:
+    column_types = infer_column_types(df)
+    datetime_cols = [c for c, t in column_types.items() if t == "datetime"]
+
     rows: list[dict[str, Any]] = []
     for idx in sorted(row_hits.keys()):
         hit = row_hits[idx]
@@ -257,6 +260,13 @@ def _build_anomaly_rows(df: pd.DataFrame, row_hits: dict[int, dict[str, Any]]) -
         values = {
             col: _safe_value(df.loc[idx, col]) for col in columns.keys() if col in df.columns
         }
+
+        primary_col = list(columns.keys())[0] if columns else None
+        title = _anomaly_title(primary_col, columns.get(primary_col, "")) if primary_col else f"Anomaly at row {idx}"
+        date_val = _extract_date(df, idx, datetime_cols)
+        impact_pct = _compute_impact_pct(df, primary_col, values.get(primary_col)) if primary_col else None
+        causes = _suggest_causes(primary_col, columns.get(primary_col, ""), df, idx)
+
         rows.append(
             {
                 "row_index": idx,
@@ -265,10 +275,80 @@ def _build_anomaly_rows(df: pd.DataFrame, row_hits: dict[int, dict[str, Any]]) -
                 "columns": list(columns.keys()),
                 "explanation": explanation,
                 "values": values,
+                "title": title,
+                "date": date_val,
+                "impact_pct": impact_pct,
+                "possible_causes": causes,
             }
         )
-    rows.sort(key=lambda r: (0 if r["severity"] == "high" else 1, -len(r["methods"])))
+    rows.sort(key=lambda r: (0 if r["severity"] == "high" else 1, -(r.get("impact_pct") or 0)))
     return rows
+
+
+def _anomaly_title(column: str, direction: str) -> str:
+    pretty = _prettify(column)
+    if "higher" in direction or "spike" in direction or "above" in direction:
+        return f"{pretty} Spike"
+    if "lower" in direction or "drop" in direction or "below" in direction:
+        return f"{pretty} Drop"
+    return f"{pretty} Anomaly"
+
+
+def _extract_date(df: pd.DataFrame, idx: int, datetime_cols: list[str]) -> str | None:
+    for col in datetime_cols:
+        if col in df.columns:
+            val = df.loc[idx, col]
+            if pd.notna(val):
+                try:
+                    return pd.Timestamp(val).strftime("%B %d, %Y")
+                except (ValueError, TypeError):
+                    return str(val)
+    return None
+
+
+def _compute_impact_pct(df: pd.DataFrame, column: str, value: Any) -> float | None:
+    if column is None or value is None:
+        return None
+    series = pd.to_numeric(df[column], errors="coerce").dropna()
+    if series.empty:
+        return None
+    q1, q3 = series.quantile(0.25), series.quantile(0.75)
+    median = series.median()
+    try:
+        val = float(value)
+    except (TypeError, ValueError):
+        return None
+    if val > q3:
+        ref = q3 if q3 else median
+        return round(((val - ref) / ref * 100) if ref else 0, 1)
+    if val < q1:
+        ref = q1 if q1 else median
+        return round(((ref - val) / ref * 100) if ref else 0, 1)
+    if median:
+        return round(abs((val - median) / median * 100), 1)
+    return None
+
+
+def _suggest_causes(column: str | None, direction: str, df: pd.DataFrame, idx: int) -> list[str]:
+    causes: list[str] = []
+    col_lower = (column or "").lower()
+
+    if any(k in col_lower for k in ("revenue", "sales", "amount", "price")):
+        if "higher" in direction or "spike" in direction:
+            causes.extend(["Promotion campaign", "Seasonal demand peak", "Bulk purchase or large order"])
+        else:
+            causes.extend(["Market downturn", "Supply chain disruption", "Pricing change"])
+    elif any(k in col_lower for k in ("churn", "cancel", "attrition")):
+        causes.extend(["Service quality issue", "Competitive offer", "Contract expiration"])
+    elif any(k in col_lower for k in ("traffic", "visit", "click", "impression")):
+        causes.extend(["Marketing campaign", "Viral content", "Platform algorithm change"])
+    else:
+        if "higher" in direction or "spike" in direction:
+            causes.extend(["Unusual one-time event", "Data entry error", "Seasonal pattern"])
+        else:
+            causes.extend(["Operational issue", "Missing data capture", "Process change"])
+
+    return causes[:3]
 
 
 def _should_include_row(hit: dict[str, Any]) -> bool:
