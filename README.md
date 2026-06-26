@@ -25,7 +25,7 @@
 [![Tests](https://img.shields.io/badge/tests-97%20passing-0A9EDC?logo=pytest&logoColor=white)](backend/tests/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-> **Live demo:** Deploy the frontend to [Vercel](https://vercel.com) and API to [Render](https://render.com) — see [docs/DEPLOY.md](docs/DEPLOY.md). Set `NEXT_PUBLIC_API_URL` to your API URL.
+> **Live demo:** Deploy frontend to [Vercel](https://vercel.com) and API to [Render](https://render.com) — see **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**. Set `NEXT_PUBLIC_API_URL` (Vercel) and `CORS_ORIGINS` (Render).
 
 ---
 
@@ -44,7 +44,9 @@ Prisma AI is an **open-source AI data analyst platform**. Upload CSV or Excel an
 | Chat | Tool-calling agent with citations (Ollama optional) |
 | Report | Markdown or PDF executive summary |
 
-**Honest scope for v3.0.0-rc.1:** sessions live in memory (no database), there is no authentication, and **Ollama is optional**. Core analytics and ML run without any LLM installed.
+**Honest scope for v3.0.0-rc.1:** sessions live in memory (no database), there is no authentication, and **AI narration is optional** (`LLM_PROVIDER=none` by default). Core analytics and ML run without any LLM, API keys, or localhost services.
+
+**v4 direction:** See [docs/ARCHITECTURE_V4.md](docs/ARCHITECTURE_V4.md) for the production foundation plan (analytics engine + optional narration layer).
 
 ---
 
@@ -134,7 +136,7 @@ flowchart TB
     Services -.->|plan_and_narrate| Ollama
 ```
 
-See [docs/architecture.md](docs/architecture.md) for full detail.
+See [docs/architecture.md](docs/architecture.md) and [docs/ARCHITECTURE_V4.md](docs/ARCHITECTURE_V4.md) for full detail.
 
 ---
 
@@ -367,8 +369,11 @@ Data-Pilot-AI/
 | `NEXT_PUBLIC_API_URL` | `http://127.0.0.1:8080` | Frontend → API base URL |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | Canonical URL for OG metadata |
 | `CORS_ORIGINS` | localhost origins | Allowed browser origins |
-| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama API URL |
+| `LLM_PROVIDER` | `none` | AI narration: `none` \| `ollama` (more later) |
+| `OLLAMA_ENABLED` | `false` | Legacy alias to enable Ollama when provider is `none` |
+| `OLLAMA_BASE_URL` | — | Only when `LLM_PROVIDER=ollama` |
 | `OLLAMA_MODEL` | `llama3.2` | Model for agent / reports |
+| `RATE_LIMIT_ENABLED` | `false` | Optional upload rate limiting |
 | `SESSION_TTL_SECONDS` | `7200` | Session expiry (seconds) |
 | `MAX_UPLOAD_MB` | `25` | Max upload size |
 | `SAMPLES_DIR` | repo `sample-data/` | Sample dataset directory |
@@ -424,6 +429,7 @@ npm run lint
 
 | Document | Description |
 |----------|-------------|
+| [Deployment](docs/DEPLOYMENT.md) | Vercel + Render production guide |
 | [Architecture](docs/architecture.md) | Data flow, ML pipelines, agent safety |
 | [V3 demo script](docs/v3-demo-script.md) | 3-minute Next.js walkthrough |
 | [Streamlit demo script](docs/streamlit-demo-script.md) | Optional dashboard walkthrough |

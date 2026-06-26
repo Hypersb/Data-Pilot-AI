@@ -10,6 +10,8 @@ from app.config import settings
 
 logger = logging.getLogger("uvicorn.error")
 
+from app.middleware.rate_limit import RateLimitMiddleware
+from app.middleware.security_headers import SecurityHeadersMiddleware
 from app.routers import (
     analysis,
     anomalies,
@@ -51,6 +53,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RateLimitMiddleware)
 
 
 def _cors_headers(origin: str | None) -> dict[str, str]:
@@ -129,4 +133,9 @@ app.include_router(team.router)
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "service": "prisma-ai-backend", "version": "3.0.0"}
+    return {
+        "status": "ok",
+        "service": "prisma-ai-backend",
+        "version": "3.0.0",
+        "llm_provider": settings.resolved_llm_provider(),
+    }

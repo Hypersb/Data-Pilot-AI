@@ -15,8 +15,18 @@ export class ApiError extends Error {
   }
 }
 
-export const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8080";
+function resolveApiBase(): string {
+  const url = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (url) return url.replace(/\/$/, "");
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "NEXT_PUBLIC_API_URL is required in production. Set it in Vercel environment variables.",
+    );
+  }
+  return "http://127.0.0.1:8080";
+}
+
+export const API_BASE = resolveApiBase();
 
 async function handleResponse<T>(res: Response, sessionScoped = false): Promise<T> {
   if (!res.ok) {

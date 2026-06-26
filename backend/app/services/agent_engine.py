@@ -3,13 +3,12 @@ from __future__ import annotations
 import json
 from typing import Any
 
-import httpx
 import pandas as pd
 
-from app.config import settings
 from app.schemas.agent import TOOL_ARGUMENT_MODELS, VALID_TOOLS, AgentPlan, ChatResponse
 from app.services.agent_tools import execute_tool
 from app.services.ingest import infer_column_types
+from app.services.llm import generate_text, llm_is_enabled
 from app.services.profiler import profile_dataframe
 
 TOOL_DESCRIPTIONS = """
@@ -94,7 +93,7 @@ async def run_agent_chat(
 
     plan = await plan_tool(df, question, chat_history)
     tool_result = execute_tool(df, plan.tool_name, plan.arguments)
-    answer = await explain_tool_result(question, tool_result, plan.tool_name)
+    answer, explain_llm = await explain_tool_result(question, tool_result, plan.tool_name)
     follow_ups = FOLLOW_UPS.get(plan.tool_name, FOLLOW_UPS["summarize_dataset"])
 
     return ChatResponse(
@@ -104,6 +103,7 @@ async def run_agent_chat(
         citations=list(tool_result.get("facts", [])),
         chart_data=dict(tool_result.get("chart_data", {})),
         follow_up_questions=follow_ups,
+        llm_enhanced=explain_llm,
     ).model_dump()
 
 
@@ -210,6 +210,8 @@ async def _plan_with_llm(
     question: str,
     chat_history: list[dict[str, str]] | None = None,
 ) -> dict[str, Any] | None:
+    if not llm_is_enabled():
+        return None
     history_text = ""
     if chat_history:
         recent = chat_history[-4:]
@@ -242,7 +244,7 @@ Question: {question}
 Respond with JSON only:
 {{"tool_name": "...", "arguments": {{...}}}}"""
 
-    response = await _ollama_generate(prompt)
+    response = await generate_text(prompt)
     if not response:
         return None
     return _parse_json_object(response)
@@ -252,9 +254,12 @@ async def explain_tool_result(
     question: str,
     tool_result: dict[str, Any],
     tool_name: str,
-) -> str:
+) -> tuple[str, bool]:
     if not tool_result.get("success", False):
-        return str(tool_result.get("answer_template") or tool_result.get("error") or "Unable to answer.")
+        return (
+            str(tool_result.get("answer_template") or tool_result.get("error") or "Unable to answer."),
+            False,
+        )
 
     facts = tool_result.get("facts", [])
     facts_text = "\n".join(f"- {fact}" for fact in facts)
@@ -270,29 +275,10 @@ Verified facts:
 
 Write the final user-facing answer:"""
 
-    llm_answer = await _ollama_generate(prompt)
+    llm_answer = await generate_text(prompt)
     if llm_answer:
-        cleaned = llm_answer.strip()
-        if cleaned:
-            return cleaned
-    return str(tool_result.get("answer_template") or " ".join(facts))
-
-
-async def _ollama_generate(prompt: str) -> str | None:
-    url = f"{settings.ollama_base_url.rstrip('/')}/api/generate"
-    payload = {
-        "model": settings.ollama_model,
-        "prompt": prompt,
-        "stream": False,
-        "options": {"temperature": 0.1},
-    }
-    try:
-        async with httpx.AsyncClient(timeout=settings.ollama_timeout) as client:
-            resp = await client.post(url, json=payload)
-            resp.raise_for_status()
-            return resp.json().get("response", "")
-    except (httpx.HTTPError, httpx.TimeoutException):
-        return None
+        return llm_answer, True
+    return str(tool_result.get("answer_template") or " ".join(facts)), False
 
 
 def _parse_json_object(text: str) -> dict[str, Any] | None:

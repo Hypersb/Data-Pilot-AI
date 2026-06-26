@@ -9,6 +9,7 @@ import { Panel } from "@/components/product/Panel";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { ErrorAlert } from "@/components/ui/ErrorAlert";
 
 const SCORE_META: Record<string, { label: string; explain: string }> = {
   completeness: {
@@ -83,11 +84,7 @@ export default function HealthPage({
       description="Overall quality score with breakdowns, explanations, and recommended fixes."
       loading={loading}
     >
-      {error && (
-        <p className="mb-4 rounded-md border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-danger">
-          {error}
-        </p>
-      )}
+      {error && <ErrorAlert message={error} className="mb-4" />}
 
       {data && (
         <div className="space-y-6">

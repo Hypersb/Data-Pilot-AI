@@ -5,7 +5,11 @@ import { getXAI } from "@/lib/api";
 import { ChartEmbed } from "@/components/charts/ChartEmbed";
 import { Panel } from "@/components/product/Panel";
 import { Badge } from "@/components/ui/Badge";
-import { Card, CardContent } from "@/components/ui/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { ErrorAlert } from "@/components/ui/ErrorAlert";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Input } from "@/components/ui/Input";
+import { Brain } from "lucide-react";
 
 export default function ExplainPage({
   params,
@@ -16,12 +20,13 @@ export default function ExplainPage({
   const [result, setResult] = useState<Awaited<ReturnType<typeof getXAI>> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [rowIndex, setRowIndex] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    getXAI(sessionId, {})
+    getXAI(sessionId, { row_index: rowIndex })
       .then((data) => {
         if (!cancelled) setResult(data);
       })
@@ -34,7 +39,9 @@ export default function ExplainPage({
     return () => {
       cancelled = true;
     };
-  }, [sessionId]);
+  }, [sessionId, rowIndex]);
+
+  const local = result?.local_explanations?.[0];
 
   return (
     <Panel
@@ -43,13 +50,24 @@ export default function ExplainPage({
       description="SHAP-powered explanations — why predictions were made and which features matter most."
       loading={loading}
     >
-      {error && <p className="text-sm text-danger">{error}</p>}
+      {error && <ErrorAlert message={error} className="mb-4" />}
 
       {result?.available && (
         <div className="space-y-6">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-3">
             <Badge variant="outline">Model: {result.model_name}</Badge>
             <Badge variant="outline">Target: {result.target_column}</Badge>
+            <div className="flex items-center gap-2">
+              <label htmlFor="row-index" className="text-sm text-text-muted">Row</label>
+              <Input
+                id="row-index"
+                type="number"
+                min={0}
+                value={rowIndex}
+                onChange={(e) => setRowIndex(Math.max(0, Number(e.target.value) || 0))}
+                className="w-24"
+              />
+            </div>
           </div>
 
           <Card>
@@ -90,15 +108,79 @@ export default function ExplainPage({
           )}
 
           {result.chart_data?.importance_bar && (
-            <ChartEmbed figure={result.chart_data.importance_bar} />
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Global importance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartEmbed figure={result.chart_data.importance_bar} />
+              </CardContent>
+            </Card>
+          )}
+
+          {result.chart_data?.summary_plot && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">SHAP summary plot</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartEmbed figure={result.chart_data.summary_plot} />
+              </CardContent>
+            </Card>
+          )}
+
+          {local && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">
+                  Local explanation — row {local.row_index} (prediction: {String(local.prediction)})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm leading-relaxed text-text-secondary">{local.narrative}</p>
+                <div className="overflow-hidden rounded-xl border border-border">
+                  <table className="w-full text-sm">
+                    <thead className="border-b border-border bg-bg-root text-left text-xs text-text-faint">
+                      <tr>
+                        <th className="px-4 py-3">Feature</th>
+                        <th className="px-4 py-3">Value</th>
+                        <th className="px-4 py-3">SHAP</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {local.top_contributors.map((c) => (
+                        <tr key={c.feature} className="border-b border-border last:border-0">
+                          <td className="px-4 py-3 text-text-primary">{c.display_name}</td>
+                          <td className="px-4 py-3 tabular-nums text-text-muted">{String(c.feature_value)}</td>
+                          <td className="px-4 py-3 tabular-nums text-text-primary">{c.shap_value.toFixed(4)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {result.chart_data?.waterfall && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">SHAP waterfall (selected row)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartEmbed figure={result.chart_data.waterfall} />
+              </CardContent>
+            </Card>
           )}
         </div>
       )}
 
       {result && !result.available && !error && (
-        <p className="text-sm text-text-muted">
-          Not enough data for SHAP analysis on this dataset. Try a file with more rows and numeric features.
-        </p>
+        <EmptyState
+          icon={Brain}
+          title="SHAP not available"
+          description="This dataset needs more rows and numeric features for tabular model explanations. Forecast-only or very small files are not supported."
+        />
       )}
     </Panel>
   );

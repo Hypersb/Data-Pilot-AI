@@ -17,6 +17,9 @@ async def test_report_markdown():
     result = await generate_full_report(df, "test.csv", fmt="markdown")
     assert result["executive_summary"]
     assert result["key_findings"] is not None
+    assert result.get("scqa")
+    assert result.get("prioritized_recommendations")
+    assert result.get("forecast_outlook")
 
 
 @pytest.mark.asyncio

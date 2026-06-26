@@ -8,6 +8,7 @@ import { ChartEmbed } from "@/components/charts/ChartEmbed";
 import { Panel } from "@/components/product/Panel";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { ErrorAlert } from "@/components/ui/ErrorAlert";
 
 export default function AnomaliesPage({
   params,
@@ -37,11 +38,7 @@ export default function AnomaliesPage({
       description="Detected anomalies with impact analysis, severity scoring, and possible causes."
       loading={loading}
     >
-      {error && (
-        <p className="mb-4 rounded-md border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-danger">
-          {error}
-        </p>
-      )}
+      {error && <ErrorAlert message={error} className="mb-4" />}
 
       {data && !data.available && (
         <Card>

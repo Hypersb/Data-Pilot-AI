@@ -1,43 +1,22 @@
-# Deploying Prisma AI
+# Deploying Prisma AI (quick reference)
 
-## Frontend (Vercel)
+**Full guide:** [DEPLOYMENT.md](DEPLOYMENT.md)
 
-1. Import the repository in [Vercel](https://vercel.com).
-2. Set root directory to `frontend`.
-3. Add environment variable:
-   - `NEXT_PUBLIC_API_URL` = your Render API URL (e.g. `https://prisma-api.onrender.com`)
-4. Deploy.
+## Production (5 minutes)
 
-## Backend (Render)
+1. **Render** — deploy from [`render.yaml`](../render.yaml), set `CORS_ORIGINS` to your Vercel URL.
+2. **Vercel** — root `frontend/`, set `NEXT_PUBLIC_API_URL` to Render URL.
+3. Verify `/health` and upload a sample CSV.
 
-1. Create a **Web Service** from `render.yaml` or connect the repo.
-2. Use the Docker build from `backend/Dockerfile` (port **8000**).
-3. Set `CORS_ORIGINS` to your Vercel URL.
-
-## Local development
+## Local dev
 
 ```powershell
-# Windows
 .\scripts\start-dev.ps1
 ```
 
-- Frontend: http://localhost:3000
-- Backend: http://127.0.0.1:8080
-
-Copy `frontend/.env.local.example` to `frontend/.env.local` before running the frontend.
-
-## Docker Compose (full stack + Ollama)
+Copy env templates:
 
 ```bash
-docker compose up --build
+cp backend/.env.example backend/.env
+cp frontend/.env.local.example frontend/.env.local
 ```
-
-- API: http://localhost:8000
-- Streamlit (optional): http://localhost:8501
-
-## Live demo checklist
-
-- [ ] Backend health: `GET /docs` returns OpenAPI UI
-- [ ] Frontend loads landing page
-- [ ] Sample dataset upload works end-to-end
-- [ ] CORS allows frontend origin

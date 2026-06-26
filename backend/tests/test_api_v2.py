@@ -67,7 +67,11 @@ def test_v2_endpoints_flow():
 
     report = client.get(f"/api/sessions/{sid}/report/v2?format=markdown")
     assert report.status_code == 200
-    assert report.json()["executive_summary"]
+    body = report.json()
+    assert body["executive_summary"]
+    assert body.get("scqa")
+    assert body.get("prioritized_recommendations") is not None
+    assert "forecast_outlook" in body
 
     team = client.post(f"/api/sessions/{sid}/team-analysis")
     assert team.status_code == 200
