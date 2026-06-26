@@ -19,7 +19,17 @@ SAMPLE_CSV = b"""date,region,product,revenue
 def test_health():
     resp = client.get("/health")
     assert resp.status_code == 200
-    assert resp.json()["status"] == "ok"
+    body = resp.json()
+    assert body["status"] == "ok"
+    assert body["llm_provider"] == "none"
+
+
+def test_upload_rejects_bad_extension():
+    resp = client.post(
+        "/api/upload",
+        files={"file": ("malware.exe", b"x", "application/octet-stream")},
+    )
+    assert resp.status_code == 400
 
 
 def test_upload_and_profile_flow():
@@ -145,6 +155,7 @@ def test_xai_endpoint():
     assert len(data["top_features"]) >= 1
     assert data["chart_data"]["importance_bar"]
     assert len(data["local_explanations"]) == 1
+    assert data["chart_data"].get("waterfall")
 
 
 def test_xai_invalid_session():

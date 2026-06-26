@@ -43,7 +43,7 @@ const intelligenceLinks = (id: string) => [
 ];
 
 const advancedLinks = (id: string) => [
-  { href: `/analyze/${id}/dashboard`, label: "Charts", icon: BarChart3 },
+  { href: `/analyze/${id}/dashboard`, label: "Dashboard", icon: BarChart3 },
   { href: `/analyze/${id}/models`, label: "Model Arena", icon: Brain },
   { href: `/analyze/${id}/explain`, label: "Explainable AI", icon: Sparkles },
   { href: `/analyze/${id}/compare`, label: "Compare", icon: GitCompare },

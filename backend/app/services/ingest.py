@@ -6,6 +6,14 @@ import pandas as pd
 
 ALLOWED_EXTENSIONS = {".csv", ".xlsx", ".xls"}
 
+ALLOWED_CONTENT_TYPES = {
+    "text/csv",
+    "application/csv",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/octet-stream",
+}
+
 
 def validate_extension(filename: str) -> str:
     lower = filename.lower()
@@ -13,6 +21,21 @@ def validate_extension(filename: str) -> str:
         if lower.endswith(ext):
             return ext
     raise ValueError("Unsupported file type. Please upload CSV or Excel (.xlsx, .xls).")
+
+
+def validate_content_type(content_type: str | None) -> None:
+    if not content_type:
+        return
+    base = content_type.split(";")[0].strip().lower()
+    if base in ALLOWED_CONTENT_TYPES:
+        return
+    raise ValueError(f"Unsupported content type: {content_type}. Upload CSV or Excel.")
+
+
+def _sanitize_cell(value: Any) -> Any:
+    if isinstance(value, str) and value and value[0] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + value
+    return value
 
 
 def parse_upload(content: bytes, filename: str) -> pd.DataFrame:
@@ -37,7 +60,8 @@ def dataframe_preview(df: pd.DataFrame, rows: int = 5) -> list[dict[str, Any]]:
         if pd.api.types.is_datetime64_any_dtype(preview[col]):
             preview[col] = preview[col].dt.strftime("%Y-%m-%d")
     preview = preview.where(pd.notnull(preview), None)
-    return preview.to_dict(orient="records")
+    records = preview.to_dict(orient="records")
+    return [{k: _sanitize_cell(v) for k, v in row.items()} for row in records]
 
 
 _ID_LIKE_COLUMNS = {"#", "id", "index", "row", "row_id", "uuid", "pk", "key"}

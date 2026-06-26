@@ -33,43 +33,18 @@ def generate_dashboard(df: pd.DataFrame) -> dict[str, Any]:
             }
         )
 
-    panels: list[dict[str, Any]] = []
-    date_cols = [c for c, r in roles.items() if r == "date"]
-    dim_cols = [c for c, r in roles.items() if r == "dimension"]
-
-    if date_cols and numeric_cols:
-        panels.append(
-            {
-                "id": "time_series",
-                "type": "line",
-                "title": f"{numeric_cols[0]} over time",
-                "config": {"date_column": date_cols[0], "metric_column": numeric_cols[0]},
-            }
-        )
-
-    for dim in dim_cols[:2]:
-        if numeric_cols:
-            panels.append(
-                {
-                    "id": f"segment_{dim}",
-                    "type": "bar",
-                    "title": f"{numeric_cols[0]} by {dim}",
-                    "config": {"dimension_column": dim, "metric_column": numeric_cols[0]},
-                }
-            )
-
-    for col in dim_cols[:2]:
-        panels.append(
-            {
-                "id": f"category_{col}",
-                "type": "pie",
-                "title": f"Distribution of {col}",
-                "config": {"column": col},
-            }
-        )
-
     charts = generate_charts(df)
     chart_data = {c["id"]: c["figure"] for c in charts}
+    panels = [
+        {
+            "id": c["id"],
+            "type": c["type"],
+            "title": c["title"],
+            "chart_id": c["id"],
+            "config": {},
+        }
+        for c in charts
+    ]
 
     quality_alerts = [i["description"] for i in health["issues"][:5]]
 

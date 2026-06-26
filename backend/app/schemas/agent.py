@@ -126,3 +126,4 @@ class ChatResponse(BaseModel):
     citations: list[str] = Field(default_factory=list)
     chart_data: dict[str, Any] = Field(default_factory=dict)
     follow_up_questions: list[str] = Field(default_factory=list)
+    llm_enhanced: bool = False

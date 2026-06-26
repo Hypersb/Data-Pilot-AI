@@ -1,5 +1,7 @@
 # Prisma AI — Architecture
 
+> **Deploy:** [DEPLOYMENT.md](DEPLOYMENT.md) · **v4 roadmap:** [ARCHITECTURE_V4.md](ARCHITECTURE_V4.md)
+
 ## System Overview
 
 Prisma AI is an API-first data analysis platform. The **Next.js web app** is the primary UI; an optional **Streamlit dashboard** is also available. Users upload CSV or Excel files; the backend profiles the data, runs analytics and ML pipelines, and returns structured JSON responses.
@@ -172,14 +174,14 @@ LLM writes explanation using ONLY those facts (or template fallback if Ollama is
 ## Deployment Notes
 
 - **Session storage** is in-memory (no database in the current MVP). Sessions expire after a configurable TTL.
-- **Ollama** is optional. Core analytics, ML, and template-based agent answers work without it; LLM-enhanced planning and narratives require a running Ollama instance.
-- Docker Compose and `render.yaml` support containerized deployment.
+- **Ollama** is optional (`LLM_PROVIDER=none` by default). Core analytics, ML, and template-based agent answers work without any LLM.
+- Docker Compose and `render.yaml` deploy the API to Render; frontend deploys to Vercel. See [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ---
 
 ## Related Documentation
 
-- [README](../README.md) — setup and API reference
+- [DEPLOYMENT.md](DEPLOYMENT.md) — production deploy (Vercel + Render)
 - [V3 demo script](./v3-demo-script.md) — recommended Next.js walkthrough
 - [Streamlit demo script](./streamlit-demo-script.md) — optional dashboard walkthrough
 - [Project evaluation](./project_evaluation.md) — recruiter-facing summary

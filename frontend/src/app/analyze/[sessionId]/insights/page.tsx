@@ -7,6 +7,7 @@ import { ChartEmbed } from "@/components/charts/ChartEmbed";
 import { Panel } from "@/components/product/Panel";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { ErrorAlert } from "@/components/ui/ErrorAlert";
 
 const severityVariant: Record<string, "danger" | "warning" | "default" | "outline"> = {
   high: "danger",
@@ -42,11 +43,7 @@ export default function InsightsPage({
 
   return (
     <Panel wide title="AI Insights" description="Statistical insights grounded in your data." loading={loading}>
-      {error && (
-        <p className="mb-4 rounded-md border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-danger">
-          {error}
-        </p>
-      )}
+      {error && <ErrorAlert message={error} className="mb-4" />}
       {insights && (
         <div className="space-y-8">
           <p className="text-sm text-text-muted">{insights.count} insights detected</p>

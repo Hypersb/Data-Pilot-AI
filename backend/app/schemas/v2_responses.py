@@ -120,7 +120,8 @@ class DashboardPanel(BaseModel):
     id: str
     type: str
     title: str
-    config: dict[str, Any]
+    chart_id: str | None = None
+    config: dict[str, Any] = Field(default_factory=dict)
 
 
 class DashboardResponse(BaseModel):

@@ -78,6 +78,7 @@ def _run_xai_explanation(
     chart_data = {
         "importance_bar": _build_importance_chart(top_features, target),
         "summary_plot": _build_summary_plot(X_sample, shap_values, feature_names, top_features),
+        "waterfall": _build_waterfall_chart(local_explanations[0]["top_contributors"]),
     }
 
     return {
@@ -266,6 +267,33 @@ def _build_importance_chart(top_features: list[dict[str, Any]], target: str) -> 
         yaxis_title="Feature",
         margin=dict(l=40, r=20, t=40, b=40),
         height=max(360, len(labels) * 36),
+    )
+    return json.loads(pio.to_json(fig))
+
+
+def _build_waterfall_chart(contributors: list[dict[str, Any]]) -> dict[str, Any]:
+    if not contributors:
+        return {}
+    labels = [c["display_name"] for c in contributors]
+    values = [c["shap_value"] for c in contributors]
+    colors = ["#6366f1" if v >= 0 else "#a855f7" for v in values]
+    fig = go.Figure(
+        go.Waterfall(
+            name="SHAP",
+            orientation="v",
+            x=labels,
+            y=values,
+            connector={"line": {"color": "#3f3f46"}},
+            increasing={"marker": {"color": "#6366f1"}},
+            decreasing={"marker": {"color": "#a855f7"}},
+            totals={"marker": {"color": "#71717a"}},
+        )
+    )
+    fig.update_layout(
+        title="Local SHAP contributions (selected row)",
+        yaxis_title="SHAP value",
+        margin=dict(l=40, r=20, t=40, b=80),
+        height=400,
     )
     return json.loads(pio.to_json(fig))
 

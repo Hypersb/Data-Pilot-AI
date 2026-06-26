@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import { getDashboard, isSessionExpiredError } from "@/lib/api";
 import type { DashboardResponse } from "@/lib/types";
 import { ChartEmbed } from "@/components/charts/ChartEmbed";
@@ -36,12 +36,21 @@ export default function DashboardPage({
     return () => { cancelled = true; };
   }, [sessionId]);
 
-  const chartKeys = data ? Object.keys(data.chart_data) : [];
+  const chartPanels = useMemo(() => {
+    if (!data) return [];
+    return data.panels
+      .map((panel) => {
+        const chartId = panel.chart_id ?? panel.id;
+        const figure = data.chart_data[chartId] as Record<string, unknown> | undefined;
+        return figure ? { panel, figure } : null;
+      })
+      .filter((item): item is { panel: DashboardResponse["panels"][0]; figure: Record<string, unknown> } => item !== null);
+  }, [data]);
 
   if (sessionExpired) return <SessionExpired />;
 
   return (
-    <Panel wide title="Charts" description="Auto-generated KPIs and visual analytics." loading={loading}>
+    <Panel wide title="Dashboard" description="KPIs and auto-generated charts driven by your dataset structure." loading={loading}>
       {error && <ErrorAlert message={error} className="mb-4" />}
       {data && (
         <div className="space-y-8">
@@ -73,17 +82,20 @@ export default function DashboardPage({
             </Card>
           )}
           <div className="grid gap-6 lg:grid-cols-2">
-            {chartKeys.length === 0 ? (
+            {chartPanels.length === 0 ? (
               <EmptyState
                 icon={BarChart3}
                 title="No charts yet"
                 description="Charts appear when your dataset has enough structure for visualizations."
               />
             ) : (
-              chartKeys.map((key) => (
-                <Card key={key}>
-                  <CardContent className="pt-6">
-                    <ChartEmbed figure={data.chart_data[key] as Record<string, unknown>} />
+              chartPanels.map(({ panel, figure }) => (
+                <Card key={panel.id}>
+                  <CardHeader>
+                    <CardTitle className="text-base">{panel.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ChartEmbed figure={figure} />
                   </CardContent>
                 </Card>
               ))

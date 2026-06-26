@@ -43,4 +43,26 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          NEXT_PUBLIC_API_URL: http://127.0.0.1:8080
+          NEXT_PUBLIC_API_URL: https://api.example.com
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API image
+        run: docker build -f backend/Dockerfile -t prisma-ai-api:ci .
+      - name: Run container and health check
+        run: |
+          docker run -d --name prisma-api -p 8000:8000 \
+            -e PORT=8000 \
+            -e LLM_PROVIDER=none \
+            -e CORS_ORIGINS=https://example.vercel.app \
+            prisma-ai-api:ci
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8000/health; then
+              exit 0
+            fi
+            sleep 3
+          done
+          docker logs prisma-api
+          exit 1

@@ -2,7 +2,13 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 
 from app.config import settings
 from app.schemas.responses import MessageResponse, UploadResponse
-from app.services.ingest import dataframe_preview, infer_column_types, parse_upload
+from app.services.ingest import (
+    dataframe_preview,
+    infer_column_types,
+    parse_upload,
+    validate_content_type,
+    validate_extension,
+)
 from app.services.session_store import session_store
 
 router = APIRouter(prefix="/api", tags=["upload"])
@@ -12,6 +18,12 @@ router = APIRouter(prefix="/api", tags=["upload"])
 async def upload_file(file: UploadFile = File(...)) -> UploadResponse:
     if not file.filename:
         raise HTTPException(status_code=400, detail="No filename provided.")
+
+    try:
+        validate_extension(file.filename)
+        validate_content_type(file.content_type)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
     content = await file.read()
     if len(content) > settings.max_upload_bytes:

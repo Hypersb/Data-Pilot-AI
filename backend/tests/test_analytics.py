@@ -30,6 +30,15 @@ def test_parse_upload(sample_df):
     assert "revenue" in sample_df.columns
 
 
+def test_preview_sanitizes_formula_injection():
+    from app.services.ingest import dataframe_preview
+    import pandas as pd
+
+    df = pd.DataFrame({"a": ["=cmd|'/c calc'!A0", "normal"]})
+    row = dataframe_preview(df, rows=1)[0]
+    assert str(row["a"]).startswith("'")
+
+
 def test_profile(sample_df):
     profile = profile_dataframe(sample_df)
     assert profile["rows"] == 8

@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
-import { TrendingDown, TrendingUp, Minus } from "lucide-react";
+import { TrendingDown, TrendingUp, Minus, LineChart } from "lucide-react";
 import { getForecastLeaderboard } from "@/lib/api";
 import { ChartEmbed } from "@/components/charts/ChartEmbed";
 import { Panel } from "@/components/product/Panel";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { ErrorAlert } from "@/components/ui/ErrorAlert";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 function TrendIcon({ trend }: { trend: string }) {
   if (trend === "increasing") return <TrendingUp className="h-4 w-4 text-success" aria-hidden />;
@@ -37,34 +39,39 @@ export default function ForecastPage({
   }, [sessionId]);
 
   const exec = result?.executive_summary;
+  const unavailable = result && !exec && !error;
 
   return (
     <Panel
       wide
       title="Forecast"
-      description="Executive forecasting with confidence intervals and AI commentary."
+      description="Executive forecasting with confidence intervals and model leaderboard."
       loading={loading}
     >
       {error && (
-        <Card>
-          <CardContent className="py-5">
-            <p className="text-sm text-text-muted">{error}</p>
-            <p className="mt-2 text-sm text-text-secondary">
-              This dataset may not have a usable time series. Try{" "}
-              <Link href={`/analyze/${sessionId}/chat`} className="text-brand hover:underline">
-                Ask Prisma
-              </Link>
-              .
-            </p>
-          </CardContent>
-        </Card>
+        <div className="space-y-3">
+          <ErrorAlert message={error} />
+          <p className="text-sm text-text-secondary">
+            Forecasting needs a date column, a numeric metric, and at least 8 time periods. Try the{" "}
+            <Link href="/upload" className="text-brand hover:underline">marketing sample</Link> or{" "}
+            <Link href={`/analyze/${sessionId}/chat`} className="text-brand hover:underline">Ask Prisma</Link>.
+          </p>
+        </div>
+      )}
+
+      {unavailable && (
+        <EmptyState
+          icon={LineChart}
+          title="Forecast not available"
+          description="This dataset does not have a usable time series. Upload a file with date and numeric columns (e.g. marketing.csv)."
+        />
       )}
 
       {result && exec && (
         <div className="space-y-6">
           <Card className="border-brand/20">
             <CardHeader>
-              <CardTitle>AI Commentary</CardTitle>
+              <CardTitle>Executive summary</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-[15px] leading-relaxed text-text-secondary">{exec.ai_commentary}</p>

@@ -152,7 +152,22 @@ export interface XAIResponse {
     importance: number;
     direction: string;
   }[];
-  chart_data: { importance_bar?: Record<string, unknown> };
+  local_explanations?: {
+    row_index: number;
+    prediction: string | number;
+    top_contributors: {
+      feature: string;
+      display_name: string;
+      shap_value: number;
+      feature_value: string | number;
+    }[];
+    narrative: string;
+  }[];
+  chart_data: {
+    importance_bar?: Record<string, unknown>;
+    summary_plot?: Record<string, unknown>;
+    waterfall?: Record<string, unknown>;
+  };
 }
 
 export interface ChartsResponse {
@@ -184,6 +199,7 @@ export interface ChatResponse {
   citations: string[];
   chart_data: Record<string, unknown>;
   follow_up_questions: string[];
+  llm_enhanced?: boolean;
 }
 
 export interface ChatMessage {
@@ -306,6 +322,7 @@ export interface DashboardPanel {
   id: string;
   type: string;
   title: string;
+  chart_id?: string | null;
   config: Record<string, unknown>;
 }
 

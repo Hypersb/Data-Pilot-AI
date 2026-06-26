@@ -33,10 +33,13 @@ async def get_report_v2(
     return ReportV2Response(
         markdown=result["markdown"],
         executive_summary=result["executive_summary"],
+        scqa=result.get("scqa"),
         key_findings=result["key_findings"],
         risks=result["risks"],
         opportunities=result["opportunities"],
         recommendations=result["recommendations"],
+        prioritized_recommendations=result.get("prioritized_recommendations", []),
+        forecast_outlook=result.get("forecast_outlook", ""),
         llm_enhanced=result["llm_enhanced"],
         format=format,
     )

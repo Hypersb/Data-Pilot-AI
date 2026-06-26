@@ -2,10 +2,9 @@ from typing import Any
 
 import pandas as pd
 
-from app.config import settings
 from app.services.forecast_engine import run_forecast
 from app.services.insight_engine import generate_insights
-from app.services.agent_engine import _ollama_generate
+from app.services.llm import generate_text, llm_is_enabled
 from app.services.profiler import profile_dataframe
 
 
@@ -42,6 +41,8 @@ async def generate_report(df: pd.DataFrame, filename: str) -> dict[str, Any]:
 
 
 async def _generate_narrative(structured: dict[str, Any]) -> str | None:
+    if not llm_is_enabled():
+        return None
     insight_lines = "\n".join(
         f"- {i['title']}: {i['description']}" for i in structured["top_insights"][:5]
     )
@@ -69,7 +70,7 @@ Write markdown sections:
 
 Be concise, data-driven, and actionable. Do not invent numbers not provided."""
 
-    return await _ollama_generate(prompt)
+    return await generate_text(prompt)
 
 
 def _build_markdown(structured: dict[str, Any], llm_narrative: str | None) -> str:
